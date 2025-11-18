@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ppann:document xmlns:ppann="https://example.org/ppann/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0">
+  <ppann:source>
+    <ppann:doi>10.1234/pp.2025.00123</ppann:doi>
+    <ppann:title>Example Plasma Paper</ppann:title>
+    <ppann:pub-date iso="2025-09-01"/>
+    <ppann:license>unspecified</ppann:license>
+  </ppann:source>
+  <ppann:provenance>
+    <ppann:run id="r1" timestamp="2025-09-26T09:22:37.525902Z">
+      <ppann:annotator kind="model">BERT-CRF (16 per-class models)</ppann:annotator>
+      <ppann:version code-commit="a1b2c3"/>
+    </ppann:run>
+  </ppann:provenance>
+  <ppann:sections>
+    <ppann:section id="sec-main" type="main" title="MainText">
+      <ppann:text>Theoretical and experimental studies of two different discharge modes in asymmetric dielectric barrier discharges in argon at atmospheric pressure have been performed. The first mode appears to be the well-known filamentary microdischarge with non-striated positive column whereas the second mode is characterized by discharge instabilities and the appearance of striations. Both experiment and model calculations predict a transition from the first mode to the second mode when the applied voltage amplitude is increased above approximately 2 kV. The reliability of the employed fluid model is confirmed by comparison of the current-voltage characteristics obtained by model calculations and measurements for different applied voltage amplitudes. The results of the model calculations point out that in the second discharge mode the ionization of excited argon atoms prevents the total recombination of charge carriers between two subsequent discharge events. This leads to the occurrence of the memory from one discharge to the following one, which plays an important role in mode transition.</ppann:text>
+    </ppann:section>
+  </ppann:sections>
+  <ppann:annotations run-ref="r1">
+    <ppann:entities>
+      <ppann:entity id="e1" type="Modelling" section="sec-main" start="0" end="15" text="Theoretical and" confidence="0.7378"/>
+      <ppann:entity id="e2" type="Experiment" section="sec-main" start="16" end="36" text="experimental studies" confidence="0.9602"/>
+      <ppann:entity id="e3" type="PlasmaApplication" section="sec-main" start="16" end="36" text="experimental studies" confidence="0.9785"/>
+      <ppann:entity id="e4" type="DischargeRegime" section="sec-main" start="54" end="69" text="discharge modes" confidence="1.0000"/>
+      <ppann:entity id="e5" type="PowerSupply" section="sec-main" start="73" end="83" text="asymmetric" confidence="1.0000"/>
+      <ppann:entity id="e6" type="ElectrodeConfiguration" section="sec-main" start="73" end="102" text="asymmetric dielectric barrier" confidence="0.4678"/>
+      <ppann:entity id="e7" type="PlasmaSource" section="sec-main" start="84" end="113" text="dielectric barrier discharges" confidence="0.9906"/>
+      <ppann:entity id="e8" type="PlasmaMedium" section="sec-main" start="117" end="122" text="argon" confidence="1.0000"/>
+      <ppann:entity id="e9" type="Species" section="sec-main" start="117" end="122" text="argon" confidence="1.0000"/>
+      <ppann:entity id="e10" type="PlasmaProperties" section="sec-main" start="126" end="146" text="atmospheric pressure" confidence="1.0000"/>
+      <ppann:entity id="e11" type="PhysicalQuantity" section="sec-main" start="138" end="146" text="pressure" confidence="0.8665"/>
+      <ppann:entity id="e12" type="DischargeRegime" section="sec-main" start="212" end="238" text="filamentary microdischarge" confidence="1.0000"/>
+      <ppann:entity id="e13" type="PlasmaSource" section="sec-main" start="224" end="238" text="microdischarge" confidence="0.9978"/>
+      <ppann:entity id="e14" type="PlasmaProperties" section="sec-main" start="244" end="256" text="non-striated" confidence="0.4920"/>
+      <ppann:entity id="e15" type="PlasmaProperties" section="sec-main" start="257" end="272" text="positive column" confidence="0.5452"/>
+      <ppann:entity id="e16" type="PhysicalEffect" section="sec-main" start="317" end="340" text="discharge instabilities" confidence="0.9625"/>
+      <ppann:entity id="e17" type="PlasmaProperties" section="sec-main" start="317" end="340" text="discharge instabilities" confidence="0.5507"/>
+      <ppann:entity id="e18" type="PhysicalQuantity" section="sec-main" start="317" end="340" text="discharge instabilities" confidence="0.5441"/>
+      <ppann:entity id="e19" type="PlasmaApplication" section="sec-main" start="363" end="374" text="striations." confidence="0.9461"/>
+      <ppann:entity id="e20" type="PlasmaProperties" section="sec-main" start="363" end="374" text="striations." confidence="0.8165"/>
+      <ppann:entity id="e21" type="Experiment" section="sec-main" start="380" end="390" text="experiment" confidence="0.9895"/>
+      <ppann:entity id="e22" type="PlasmaApplication" section="sec-main" start="395" end="400" text="model" confidence="0.9639"/>
+      <ppann:entity id="e23" type="Modelling" section="sec-main" start="395" end="413" text="model calculations" confidence="1.0000"/>
+      <ppann:entity id="e24" type="PhysicalEffect" section="sec-main" start="424" end="434" text="transition" confidence="0.9994"/>
+      <ppann:entity id="e25" type="DischargeRegime" section="sec-main" start="444" end="454" text="first mode" confidence="0.6417"/>
+      <ppann:entity id="e26" type="PhysicalQuantity" section="sec-main" start="483" end="508" text="applied voltage amplitude" confidence="0.6822"/>
+      <ppann:entity id="e27" type="PowerSupply" section="sec-main" start="483" end="508" text="applied voltage amplitude" confidence="0.9991"/>
+      <ppann:entity id="e28" type="Unit" section="sec-main" start="544" end="547" text="kV." confidence="0.9981"/>
+      <ppann:entity id="e29" type="PlasmaApplication" section="sec-main" start="571" end="591" text="employed fluid model" confidence="0.8505"/>
+      <ppann:entity id="e30" type="DiagnosticDevice" section="sec-main" start="580" end="585" text="fluid" confidence="0.6052"/>
+      <ppann:entity id="e31" type="Modelling" section="sec-main" start="580" end="591" text="fluid model" confidence="1.0000"/>
+      <ppann:entity id="e32" type="PlasmaProperties" section="sec-main" start="626" end="634" text="current-" confidence="0.8502"/>
+      <ppann:entity id="e33" type="PhysicalQuantity" section="sec-main" start="626" end="641" text="current-voltage" confidence="0.5318"/>
+      <ppann:entity id="e34" type="PlasmaApplication" section="sec-main" start="670" end="675" text="model" confidence="0.8047"/>
+      <ppann:entity id="e35" type="Modelling" section="sec-main" start="670" end="688" text="model calculations" confidence="1.0000"/>
+      <ppann:entity id="e36" type="Experiment" section="sec-main" start="693" end="705" text="measurements" confidence="0.9876"/>
+      <ppann:entity id="e37" type="PhysicalQuantity" section="sec-main" start="720" end="747" text="applied voltage amplitudes." confidence="0.6289"/>
+      <ppann:entity id="e38" type="PowerSupply" section="sec-main" start="720" end="747" text="applied voltage amplitudes." confidence="0.9984"/>
+      <ppann:entity id="e39" type="Modelling" section="sec-main" start="767" end="785" text="model calculations" confidence="1.0000"/>
+      <ppann:entity id="e40" type="PlasmaSource" section="sec-main" start="815" end="824" text="discharge" confidence="0.9843"/>
+      <ppann:entity id="e41" type="DischargeRegime" section="sec-main" start="815" end="829" text="discharge mode" confidence="1.0000"/>
+      <ppann:entity id="e42" type="PhysicalEffect" section="sec-main" start="834" end="844" text="ionization" confidence="0.9906"/>
+      <ppann:entity id="e43" type="Species" section="sec-main" start="848" end="867" text="excited argon atoms" confidence="0.9993"/>
+      <ppann:entity id="e44" type="PlasmaMedium" section="sec-main" start="856" end="861" text="argon" confidence="1.0000"/>
+      <ppann:entity id="e45" type="PhysicalEffect" section="sec-main" start="887" end="900" text="recombination" confidence="0.9762"/>
+      <ppann:entity id="e46" type="PhysicalQuantity" section="sec-main" start="904" end="919" text="charge carriers" confidence="0.7450"/>
+      <ppann:entity id="e47" type="Experiment" section="sec-main" start="997" end="1003" text="memory" confidence="0.6500"/>
+      <ppann:entity id="e48" type="PlasmaSource" section="sec-main" start="1013" end="1022" text="discharge" confidence="0.7204"/>
+      <ppann:entity id="e49" type="PlasmaApplication" section="sec-main" start="1078" end="1082" text="mode" confidence="0.6427"/>
+      <ppann:entity id="e50" type="PhysicalEffect" section="sec-main" start="1078" end="1094" text="mode transition." confidence="0.9991"/>
+      <ppann:entity id="e51" type="DischargeRegime" section="sec-main" start="1078" end="1094" text="mode transition." confidence="1.0000"/>
+    </ppann:entities>
+    <ppann:entity-attributes/>
+    <ppann:relations/>
+    <ppann:section-labels/>
+    <ppann:sentences/>
+  </ppann:annotations>
+  <ppann:vocab>
+    <ppann:entity-type id="DiagnosticDevice" iri="https://example.org/plasma#DiagnosticDevice"/>
+    <ppann:entity-type id="DischargeRegime" iri="https://example.org/plasma#DischargeRegime"/>
+    <ppann:entity-type id="ElectrodeConfiguration" iri="https://example.org/plasma#ElectrodeConfiguration"/>
+    <ppann:entity-type id="ElectrodeMaterial" iri="https://example.org/plasma#ElectrodeMaterial"/>
+    <ppann:entity-type id="Experiment" iri="https://example.org/plasma#Experiment"/>
+    <ppann:entity-type id="Modelling" iri="https://example.org/plasma#Modelling"/>
+    <ppann:entity-type id="PhysicalEffect" iri="https://example.org/plasma#PhysicalEffect"/>
+    <ppann:entity-type id="PhysicalQuantity" iri="https://example.org/plasma#PhysicalQuantity"/>
+    <ppann:entity-type id="PlasmaApplication" iri="https://example.org/plasma#PlasmaApplication"/>
+    <ppann:entity-type id="PlasmaMedium" iri="https://example.org/plasma#PlasmaMedium"/>
+    <ppann:entity-type id="PlasmaProperties" iri="https://example.org/plasma#PlasmaProperties"/>
+    <ppann:entity-type id="PlasmaSource" iri="https://example.org/plasma#PlasmaSource"/>
+    <ppann:entity-type id="PlasmaTarget" iri="https://example.org/plasma#PlasmaTarget"/>
+    <ppann:entity-type id="PowerSupply" iri="https://example.org/plasma#PowerSupply"/>
+    <ppann:entity-type id="Species" iri="https://example.org/plasma#Species"/>
+    <ppann:entity-type id="Unit" iri="https://example.org/plasma#Unit"/>
+  </ppann:vocab>
+</ppann:document>

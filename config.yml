@@ -1,0 +1,24 @@
+test:
+  base_url: "https://test.service.tib.eu/renate/server/api/"
+  endpoints:
+    collections: "core/collections"
+    collection_items: "discover/search/objects?scope="
+    items: "core/items"
+    update_item_metadata: "core/items/{item_uuid}"
+    upload_bitstreams: "core/bundles/{bundle_uuid}/bitstreams"
+    "login": "authn/login"
+    "GROBID": "" 
+  credentials:
+    user: "muhammad.haris@tib.eu"
+    password: ""
+
+production:
+  base_url: "https://oa.tib.eu/renate/server/api/"
+  endpoints:
+    collections: "core/collections"
+    collection_items: "discover/search/objects?scope="
+    items: "core/items"
+    bitstreams: "core/bitstreams"
+  credentials:
+    user: "xyz@tib.eu"
+    password: "123"

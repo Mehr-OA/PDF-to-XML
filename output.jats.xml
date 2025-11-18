@@ -1,0 +1,222 @@
+<jats:article xmlns:jats="http://jats.nlm.nih.gov" article-type="research-article">
+  <jats:front>
+    <jats:journal-meta/>
+    <jats:article-meta>
+      <jats:title-group>
+        <jats:article-title>A Search for QPOs in the Blazar OJ287: Preliminary Results from the 2015/2016 Observing Campaign</jats:article-title>
+      </jats:title-group>
+      <jats:pub-date date-type="published">
+        <jats:day>09</jats:day>
+        <jats:month>10</jats:month>
+        <jats:year>2016</jats:year>
+      </jats:pub-date>
+      <jats:ref id="">
+        <jats:mixed-citation><jats:article-title>A Search for QPOs in the Blazar OJ287: Preliminary Results from the 2015/2016 Observing Campaign</jats:article-title>,
+            <jats:name><jats:surname>Zola</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Valtonen</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Bhatta</jats:surname>,
+        <jats:given-names>G</jats:given-names></jats:name><jats:name><jats:surname>Goyal</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Debski</jats:surname>,
+        <jats:given-names>B</jats:given-names></jats:name><jats:name><jats:surname>Baran</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Krzesinski</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Siwak</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Ciprini</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Gopakumar</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Jermak</jats:surname>,
+        <jats:given-names>H</jats:given-names></jats:name><jats:name><jats:surname>Nilsson</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Reichart</jats:surname>,
+        <jats:given-names>D</jats:given-names></jats:name><jats:name><jats:surname>Matsumoto</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Sadakane</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Gazeas</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Kidger</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Piirola</jats:surname>,
+        <jats:given-names>V</jats:given-names></jats:name><jats:name><jats:surname>Alicavus</jats:surname>,
+        <jats:given-names>F</jats:given-names></jats:name><jats:name><jats:surname>Baliyan</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Berdyugin</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Boyd</jats:surname>,
+        <jats:given-names>D</jats:given-names></jats:name><jats:name><jats:surname>Campas Torrent</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Campos</jats:surname>,
+        <jats:given-names>F</jats:given-names></jats:name><jats:name><jats:surname>Carrillo G&#243;mez</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Caton</jats:surname>,
+        <jats:given-names>D</jats:given-names></jats:name><jats:name><jats:surname>Chavushyan</jats:surname>,
+        <jats:given-names>V</jats:given-names></jats:name><jats:name><jats:surname>Dalessio</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Dimitrov</jats:surname>,
+        <jats:given-names>D</jats:given-names></jats:name><jats:name><jats:surname>Drozdz</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Er</jats:surname>,
+        <jats:given-names>H</jats:given-names></jats:name><jats:name><jats:surname>Erdem</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Escartin P&#233;rez</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Fallah Ramazani</jats:surname>,
+        <jats:given-names>V</jats:given-names></jats:name><jats:name><jats:surname>Filippenko</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Garcia</jats:surname>,
+        <jats:given-names>F</jats:given-names></jats:name><jats:name><jats:surname>G&#243;mez Pinilla</jats:surname>,
+        <jats:given-names>F</jats:given-names></jats:name><jats:name><jats:surname>Gopinathan</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Haislip</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Harmanen</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Hudec</jats:surname>,
+        <jats:given-names>R</jats:given-names></jats:name><jats:name><jats:surname>Hurst</jats:surname>,
+        <jats:given-names>G</jats:given-names></jats:name><jats:name><jats:surname>Ivarsen</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Jelinek</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Joshi</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Kagitani</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Kaur</jats:surname>,
+        <jats:given-names>N</jats:given-names></jats:name><jats:name><jats:surname>Keel</jats:surname>,
+        <jats:given-names>W</jats:given-names></jats:name><jats:name><jats:surname>Lacluyze</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Lee</jats:surname>,
+        <jats:given-names>B</jats:given-names></jats:name><jats:name><jats:surname>Lindfors</jats:surname>,
+        <jats:given-names>E</jats:given-names></jats:name><jats:name><jats:surname>Lozano De Haro</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Moore</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Mugrauer</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Naves Nogues</jats:surname>,
+        <jats:given-names>R</jats:given-names></jats:name><jats:name><jats:surname>Neely</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Nelson</jats:surname>,
+        <jats:given-names>R</jats:given-names></jats:name><jats:name><jats:surname>Ogloza</jats:surname>,
+        <jats:given-names>W</jats:given-names></jats:name><jats:name><jats:surname>Okano</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Pandey</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Perri</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Pihajoki</jats:surname>,
+        <jats:given-names>P</jats:given-names></jats:name><jats:name><jats:surname>Poyner</jats:surname>,
+        <jats:given-names>G</jats:given-names></jats:name><jats:name><jats:surname>Provencal</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Pursimo</jats:surname>,
+        <jats:given-names>T</jats:given-names></jats:name><jats:name><jats:surname>Raj</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Reinthal</jats:surname>,
+        <jats:given-names>R</jats:given-names></jats:name><jats:name><jats:surname>Sadegi</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Sakanoi</jats:surname>,
+        <jats:given-names>T</jats:given-names></jats:name><jats:name><jats:surname>Sameer</jats:surname>,
+        <jats:given-names/></jats:name><jats:name><jats:surname>Salto Gonz&#225;lez</jats:surname>,
+        <jats:given-names>J.-L</jats:given-names></jats:name><jats:name><jats:surname>Schweyer</jats:surname>,
+        <jats:given-names>T</jats:given-names></jats:name><jats:name><jats:surname>Sold&#225;n Alfaro</jats:surname>,
+        <jats:given-names>F</jats:given-names></jats:name><jats:name><jats:surname>Karaman</jats:surname>,
+        <jats:given-names>N</jats:given-names></jats:name><jats:name><jats:surname>Sonbas</jats:surname>,
+        <jats:given-names>E</jats:given-names></jats:name><jats:name><jats:surname>Steele</jats:surname>,
+        <jats:given-names>I</jats:given-names></jats:name><jats:name><jats:surname>Stocke</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Strobl</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Takalo</jats:surname>,
+        <jats:given-names>L</jats:given-names></jats:name><jats:name><jats:surname>Tomov</jats:surname>,
+        <jats:given-names>T</jats:given-names></jats:name><jats:name><jats:surname>Tremosa Espasa</jats:surname>,
+        <jats:given-names>L</jats:given-names></jats:name><jats:name><jats:surname>Valdes</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Valero P&#233;rez</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Verrecchia</jats:surname>,
+        <jats:given-names>F</jats:given-names></jats:name><jats:name><jats:surname>Webb</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Yoneda</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Zejmo</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Zheng</jats:surname>,
+        <jats:given-names>W</jats:given-names></jats:name><jats:name><jats:surname>Telting</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Saario</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Reynolds</jats:surname>,
+        <jats:given-names>T</jats:given-names></jats:name><jats:name><jats:surname>Kvammen</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Gafton</jats:surname>,
+        <jats:given-names>E</jats:given-names></jats:name><jats:name><jats:surname>Karjalainen</jats:surname>,
+        <jats:given-names>R</jats:given-names></jats:name><jats:name><jats:surname>Blay</jats:surname>,
+        <jats:given-names>P</jats:given-names></jats:name><jats:name><jats:surname>Riera</jats:surname>,
+        <jats:given-names>C</jats:given-names></jats:name><jats:name><jats:surname>G&#243;mez</jats:surname>,
+        <jats:given-names>Jose</jats:given-names></jats:name><jats:name><jats:surname>Marscher</jats:surname>,
+        <jats:given-names>Alan</jats:given-names></jats:name><jats:name><jats:surname>Jorstad</jats:surname>,
+        <jats:given-names>Svetlana</jats:given-names></jats:name><jats:source/>,
+            <jats:volume/>,
+            <jats:page/> 
+            (<jats:year>2016-10-09</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation>
+      </jats:ref>
+      <jats:abstract>
+        <jats:p>We analyse the light curve in the R band of the blazar OJ287, gathered during the 2015/2016 observing season. We did a search for quasi-periodic oscillations (QPOs) using several methods over a wide range of timescales. No statistically significant periods were found in the high-frequency domain both in the ground-based data and in Kepler observations. In the longer-period domain, the Lomb-Scargle periodogram revealed several peaks above the 99% significance level. The longest one-about 95 days-corresponds to the innermost stable circular orbit (ISCO) period of the more massive black hole. The 43-day period could be an alias, or it can be attributed to accretion in the form of a two-armed spiral wave.</jats:p>
+      </jats:abstract>
+    </jats:article-meta>
+  </jats:front>
+  <jats:body>
+    <jats:sec>Introduction<jats:p>OJ287 is the only blazar known to exhibit certain quasi-periodic variability in its light curve, with a rough period of 12 years. A model that successfully explains this observational feature requires the blazar central engine to contain a binary consisting of two supermassive black holes (SMBHs; <jats:xref ref-type="bibr" rid="b0">Valtonen et al. 2008</jats:xref><jats:xref ref-type="bibr" rid="b0">[1]</jats:xref>, and references therein). The two SMBHs orbit their common center of mass, and the less-massive one (150 million solar mass) pierces the accretion disk surrounding the more-massive one (18 billion solar mass) twice per orbit. The general relativistic orbital precession naturally explains the quasi-periodic light-curve variability of OJ287.</jats:p><jats:p>Since 2006, OJ287 has been regularly monitored at optical wavelengths at the Mt. Suhora Observatory, with supporting observations at Krakow and Athens. In the 2015/2016 season, we started observations in September, soon after the blazar became visible after the summer conjunction with the Sun. In anticipation of the outburst predicted for this season by the binary model, a multi-site campaign was organized. Polarimetric observations were also scheduled to help reveal the nature of the expected brightening. The predicted outburst started at the end of November 2015, with an initial slow rise in brightness followed by a very rapid brightening. After our alert, almost two dozen telescopes on four continents contributed photometric observations, providing very good coverage of the event as shown in the upper panel of Figure 1. Polarimetric observations were taken at Hawaii, the Canary Islands, Mt. Suhora, and in India. The full-season light curve of OJ287 taken until mid-May 2016 is presented in the bottom panel of Figure 1; symbols in green denote dates when low polarization (p &lt; 11%) was measured. Ultraviolet (UV) and X-ray data were also obtained with the Swift satellite.</jats:p><jats:p>Timing of this and previous outbursts allowed revision of the masses of the SMBHs, and the measured spin of the more-massive black hole (BH) is 0.31 &#177; 0.01 <jats:xref ref-type="bibr" rid="">(Valtonen et al. 2016 [2]</jats:xref>). The December 2015 high-amplitude flare turned out to be unpolarized.</jats:p></jats:sec>
+    <jats:sec>Search for QPOs</jats:sec>
+    <jats:sec>Ground-Based Data<jats:p>Variability at all wavelengths is commonly observed in blazars. Amplitudes of flux changes in the optical band can reach a few magnitudes. These variations can be fast; often, intraday variability is seen. There are physical processes in blazars that could lead to periodic or quasi-periodic behaviour (e.g., those arising at the innermost stable circular orbit). Detection of such quasi-periodic oscillations (QPOs) could give a better understanding of the underlying physical processes in blazars. There were numerous periodicity analyses and discussions of the physical significance of the various frequencies in OJ287. Results covering the previous outburst in 2005 were published by <jats:xref ref-type="bibr" rid="b2">Valtonen et al. (2012)</jats:xref><jats:xref ref-type="bibr" rid="b2">[3]</jats:xref> and by <jats:xref ref-type="bibr" rid="b3">Pihajoki et al. (2013)</jats:xref><jats:xref ref-type="bibr" rid="b3">[4]</jats:xref>.</jats:p><jats:p>The intensive multisite monitoring of OJ287 in the 2015/2016 season resulted in the best coverage ever obtained from the ground: between mid-November 2015 and mid-May 2016, OJ287 was observed a few times per day. Our first goal was to search for any periodic signal present in the data around the December flare. We analysed the residuals left after the trend plotted as the model line (Figure 1, top panel) was subtracted. Three methods were applied: regular Fourier transform (FT), wavelet, and running Fourier transform (rFT). We found no significant (above the 4&#963; level) peaks with FT. A period of about 3 hr can be recognized, but only at the &#8764; 2&#963; level. Both the wavelet and rFT techniques revealed the presence of a statistically significant, short-lived period of about 3 days at the outburst maximum. The period of its visibility was centered at the maximum of brightness (Figure 2) -it showed up near JD 2,457,360 and disappeared after &#8764; 4 days. We also performed a thorough search using the entire season dataset covering the period from mid-September 2015 to mid-May 2016. Several statistical tools have been used, and we show the Lomb-Scargle periodogram <jats:xref ref-type="bibr" rid="">(Lomb 1976 [5]</jats:xref>, <jats:xref ref-type="bibr" rid="">Scargle 1982 [6]</jats:xref>) in the left panel of Figure 3. The red-noise (&#946; = 1.5) light curves were simulated by the randomization of both phase and amplitude, as described by Timmer &amp; Koenig 1995 <jats:xref ref-type="bibr" rid="b6">[7]</jats:xref>. The light curves were then resampled according to the sampling of the real light curve, and their Lomb-Scargle periodogram (LSP) was computed. The mean LSP of 1000 simulated light curves is shown in black in the left panel of Figure 3. No significant peaks corresponding to short periods were found. In the longer-period domain, there seem to be statistically significant peaks in the range between 0.01 and 0.1 c/d. However, the weighted wavelet Z-transform analysis (WWZ; Foster 1996 <jats:xref ref-type="bibr" rid="b7">[8]</jats:xref>) indicates that they are not stable. As seen in Figure 3 (right panel), the length of the longest period (about 95 days) has been increasing since it started to be visible at about JD 2457330. </jats:p></jats:sec>
+    <jats:sec>K2 Observations<jats:p>OJ287 was observed by the Kepler spacecraft during K2 Campaign 5. This run resulted in almost continuous coverage over 75 days ( 27 April 2015 to 10 July) with about 1-min cadence. We used both short-and long-cadence target pixel files. We employed our custom IRAF tasks to pull out fluxes, applying three-pixel circular apertures. We computed power spectral density (PSD) functions for the resulting light curve and also the 2015/2016 ground-based data. Neither show any statistically significant periodicities that could be attributed to QPOs.</jats:p></jats:sec>
+    <jats:sec>Conclusions<jats:p>We found no stable periods in the OJ287 photometric data over the entire 2015/2016 season. However, the 95-day peak in the power spectrum is close to the period for the more-massive BH ISCO, while the 43-day peak is half of this value. Accretion in the form of a one-armed stationary spiral density wave should show up as the full ISCO period, while a two-armed stationary wave will feed the central BH at one-half of the ISCO period. Both types of density waves are observed, such as in galactic disks under perturbation. These phenomena are not expected to produce stable periodicities, since interactions between the exact ISCO period and wave frequencies may occur. The 95-day period started to be visible somewhat before the December outburst, and its best visibility continued after the outburst. The period increased with time, and simultaneously, high optical variability of OJ287 was observed.</jats:p><jats:p>We found no firm evidence of any short-period variability that could be attributed to the secondary black hole (at the ISCO or the event horizon). The peaks that different techniques revealed are either transient-like the 3-day period found in the maximum of the December 2015 flare-or the periods and the variability amplitudes in the higher-frequency domain change with time. Such flux changes at shorter timescales most likely originate in the jet. The 3-day quasiperiodicity is the expected jet counterpart of the half-ISCO, with a Lorentz compression factor of 14.</jats:p><jats:p>The PSD analysis of both ground-based and Kepler data shows no statistically significant peaks. However, if they do exist, they could be hidden by the high-amplitude variability of the flaring component present after the unprecedented December 2015 outburst.</jats:p></jats:sec>
+    <jats:fig>
+      <jats:label>Figure 1 .</jats:label>
+      <jats:caption>
+        <jats:p>Figure 1. R-band light curve of OJ287 gathered during the 2015/2016 season. The December 2015 outburst is shown in the top panel, while the full-season light curve is in the bottom panel. The December 2015 high-amplitude flare turned out to be unpolarized.</jats:p>
+      </jats:caption>
+    </jats:fig>
+    <jats:fig>
+      <jats:label>Figure 2 .</jats:label>
+      <jats:caption>
+        <jats:p>Figure 2. Running Fourier transform Running Fourier transform (rFT) of the OJ287 data gathered during the 2015/2016 outburst.</jats:p>
+      </jats:caption>
+    </jats:fig>
+    <jats:fig>
+      <jats:label>Figure 3 .</jats:label>
+      <jats:caption>
+        <jats:p>Figure 3. (a) Left panel: Lomb-Scargle periodogram (LSP) of the 2015/2016 data (blue line). The 99% confidence level is shown as the red contour; (b) Right panel: the resulting graph from the wavelet Z-transform analysis.</jats:p>
+      </jats:caption>
+    </jats:fig>
+  </jats:body>
+  <jats:back><jats:sec><jats:sec><jats:p>Acknowledgments: This work was partially supported by the NCN grant No. 2013/09/B/ST9/00599. The Czech team acknowledges GACR grant No. 13-33324S. The Berkeley team is grateful for NSF grant AST-1211916, NASA grant NNX12AF12G, the TABASGO Foundation, and the Christopher R. Redlich Fund. Research at Lick Observatory (KAIT) is partially supported by a generous gift from Google.</jats:p></jats:sec></jats:sec>2013/09/B/ST9/0059913-33324SAST-1211916NNX12AF12G<jats:sec><jats:sec><jats:p>Author Contributions: S. Zola coordinated the observing campaign and wrote the paper; M. Valtonen and A. Gopakumar did GR computations; G. Bhatta, A. Goyal, and J. Krzesinski performed the statistical analysis; A. Baran reduced the Kepler observations; S. Ciprini gathered and reduced UV and X-ray data; everyone else contributed photometric and/or polarimetric data, and A.V. Filippenko also edited the paper.</jats:p></jats:sec><jats:sec>Conflicts of Interest:<jats:p>The authors declare no conflict of interest.</jats:p></jats:sec><jats:sec>Abbreviations<jats:p>The following abbreviations are used in this manuscript: </jats:p></jats:sec><jats:sec>BH</jats:sec></jats:sec><jats:sec><jats:ref id="b0"><jats:mixed-citation><jats:article-title>Massive binary black-hole system in OJ287 and a test of general relativity</jats:article-title>,
+            <jats:name><jats:surname>Valtonen</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Lehto</jats:surname>,
+        <jats:given-names>H</jats:given-names></jats:name><jats:name><jats:surname>Nilsson</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Heidt</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Takalo</jats:surname>,
+        <jats:given-names>L</jats:given-names></jats:name><jats:name><jats:surname>Sillanp&#228;&#228;</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Villforth</jats:surname>,
+        <jats:given-names>C</jats:given-names></jats:name><jats:name><jats:surname>Kidger</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Poyner</jats:surname>,
+        <jats:given-names>G</jats:given-names></jats:name><jats:name><jats:surname>Pursimo</jats:surname>,
+        <jats:given-names>T</jats:given-names></jats:name><jats:source>Nature</jats:source>,
+            <jats:volume>452</jats:volume>,
+            <jats:page/> 
+            (<jats:year>2008</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b1"><jats:mixed-citation><jats:article-title>Primary black hole spin as determined by the general relativity centenary flare</jats:article-title>,
+            <jats:name><jats:surname>Valtonen</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Zola</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Ciprini</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Gopakumar</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:name><jats:surname>Matsumoto</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Sadakane</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Kidger</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Gazeas</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Nilsson</jats:surname>,
+        <jats:given-names>K</jats:given-names></jats:name><jats:name><jats:surname>Berdyugin</jats:surname>,
+        <jats:given-names>A</jats:given-names></jats:name><jats:source>Astrophys. J. Lett</jats:source>,
+            <jats:volume>819</jats:volume>,
+            <jats:page>37</jats:page> 
+            (<jats:year>2016</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b2"><jats:mixed-citation><jats:article-title>On the masses of OJ287 black holes</jats:article-title>,
+            <jats:name><jats:surname>Valtonen</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Ciprini</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:name><jats:surname>Lehto</jats:surname>,
+        <jats:given-names>H</jats:given-names></jats:name><jats:source>Mon. Not. R. Astron. Soc</jats:source>,
+            <jats:volume>427</jats:volume>,
+            <jats:page/> 
+            (<jats:year>2012</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b3"><jats:mixed-citation><jats:article-title>Short time-scale periodicity in OJ 287</jats:article-title>,
+            <jats:name><jats:surname>Pihajoki</jats:surname>,
+        <jats:given-names>P</jats:given-names></jats:name><jats:name><jats:surname>Valtonen</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:name><jats:surname>Ciprini</jats:surname>,
+        <jats:given-names>S</jats:given-names></jats:name><jats:source>Mon. Not. R. Astron. Soc</jats:source>,
+            <jats:volume>434</jats:volume>,
+            <jats:page/> 
+            (<jats:year>2013</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b4"><jats:mixed-citation><jats:article-title>Least-squares frequency analysis of unequally spaced data</jats:article-title>,
+            <jats:name><jats:surname>Lomb</jats:surname>,
+        <jats:given-names>N</jats:given-names></jats:name><jats:source>Astrophys. Space Sci</jats:source>,
+            <jats:volume>39</jats:volume>,
+            <jats:page/> 
+            (<jats:year>1976</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b5"><jats:mixed-citation><jats:article-title>Studies in astronomical time series analysis. II-Statistical aspects of spectral analysis of unevenly spaced data</jats:article-title>,
+            <jats:name><jats:surname>Scargle</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:source>Astrophys. J</jats:source>,
+            <jats:volume>263</jats:volume>,
+            <jats:page/> 
+            (<jats:year>1982</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b6"><jats:mixed-citation><jats:article-title>On generating power law noise</jats:article-title>,
+            <jats:name><jats:surname>Timmer</jats:surname>,
+        <jats:given-names>J</jats:given-names></jats:name><jats:name><jats:surname>Koenig</jats:surname>,
+        <jats:given-names>M</jats:given-names></jats:name><jats:source>Astron. Astrophys</jats:source>,
+            <jats:volume>300</jats:volume>,
+            <jats:page/> 
+            (<jats:year>1995</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref><jats:ref id="b7"><jats:mixed-citation><jats:article-title>Wavelets for period analysis of unevenly sampled time series</jats:article-title>,
+            <jats:name><jats:surname>Foster</jats:surname>,
+        <jats:given-names>G</jats:given-names></jats:name><jats:source>Astron. J</jats:source>,
+            <jats:volume>112</jats:volume>,
+            <jats:page/> 
+            (<jats:year>1996</jats:year>).
+            <jats:pub-id pub-id-type="doi"/></jats:mixed-citation></jats:ref></jats:sec></jats:back>
+</jats:article>

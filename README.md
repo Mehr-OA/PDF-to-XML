@@ -37,7 +37,7 @@ Upload JATS XML to item
 Plasma-physics detection
       │
       ▼
-NER annotation (BERT-CRF)
+NER annotation
       │
       ▼
 Add extracted entities to item metadata

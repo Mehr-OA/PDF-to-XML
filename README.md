@@ -17,29 +17,29 @@ The pipeline is designed to be executed by a human operator using a simple shell
 
 ```
 RENATE collection
-│
-▼
+      │
+      ▼
 Fetch items via API
-│
-▼
+      │
+      ▼
 Download PDFs
-│
-▼
+      │
+      ▼
 GROBID (PDF → TEI XML)
-│
-▼
+      │
+      ▼
 TEI → JATS conversion
-│
-▼
+      │
+      ▼
 Upload JATS XML to item
-│
-▼
+      │
+      ▼
 Plasma-physics detection
-│
-▼
+      │
+      ▼
 NER annotation (BERT-CRF)
-│
-▼
+      │
+      ▼
 Add extracted entities to item metadata
 ```
 

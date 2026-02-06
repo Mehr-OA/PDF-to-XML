@@ -61,8 +61,6 @@ Add extracted entities to item metadata
 └── README.md
 ```
 
----
-
 ## Requirements
 
 ### System Requirements

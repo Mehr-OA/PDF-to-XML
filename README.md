@@ -11,8 +11,6 @@ This repository provides a pipeline for:
 
 The pipeline is designed to be executed by a human operator using a simple shell script.
 
----
-
 ## Overview of the Pipeline
 
 ```

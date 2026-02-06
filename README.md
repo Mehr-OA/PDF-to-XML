@@ -76,10 +76,14 @@ bash
 pip install -r requirements.txt
 
 requests
+
 lxml
+
 torch
+
 transformers
-pyyaml
+
+pyyam
 
 
 ### GROBID Setup

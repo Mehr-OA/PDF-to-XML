@@ -75,15 +75,11 @@ Install using:
 bash
 pip install -r requirements.txt
 
-requests
-
+request
 lxml
-
 torch
-
 transformers
-
-pyyam
+pyyaml
 
 
 ### GROBID Setup

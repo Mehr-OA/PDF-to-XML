@@ -15,6 +15,7 @@ import requests
 import re
 from typing import Iterable, Union, List
 from config_loader import CONFIG
+from inference import generate_annotations
 
 tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
 
@@ -60,6 +61,10 @@ EXCLUSIONS = [
     "burning plasma", "inertial confinement", "laser plasma"
 ]
 
+# Precompile for speed
+_POS_PATS = [_word_boundary_pattern(t) for t in LTP_KEYWORDS]
+_NEG_PATS = [_word_boundary_pattern(t) for t in EXCLUSIONS]
+
 def _word_boundary_pattern(term: str) -> re.Pattern:
     words = term.strip().split()
     # \b around each alnum chunk; allow hyphens inside words
@@ -67,9 +72,18 @@ def _word_boundary_pattern(term: str) -> re.Pattern:
     pat = r"\s+".join(parts)
     return re.compile(pat, flags=re.IGNORECASE)
 
-# Precompile for speed
-_POS_PATS = [_word_boundary_pattern(t) for t in LTP_KEYWORDS]
-_NEG_PATS = [_word_boundary_pattern(t) for t in EXCLUSIONS]
+def clean_and_split_text(text):
+    """Cleans text by removing unwanted characters and splits into sentences."""
+    # Remove specific unwanted characters
+    text = text.replace('\n', ' ')  # Replace newlines with space to avoid joining words
+
+    # Split text into sentences by '.'
+    sentences = text.split('.')
+    
+    # Strip whitespace from each sentence
+    cleaned_sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
+    
+    return cleaned_sentences
 
 def _norm_keywords(meta_keywords: Union[str, Iterable[str], None]) -> str:
     if meta_keywords is None:
@@ -160,6 +174,54 @@ def bio_spans(token_labels):
         sp["text"] = " ".join(sp["tokens"])
 
     return spans
+
+def parse_jats_xml(xml_url):
+    r = requests.get(xml_url, stream=True)
+    r.raise_for_status()
+    r.raw.decode_content = True
+
+    parser = etree.XMLParser(resolve_entities=False, no_network=True, recover=True, huge_tree=True)
+    tree = etree.parse(r.raw, parser)
+    root = tree.getroot()
+
+    # Detect default ns (JATS commonly uses a default)
+    jats_ns = root.nsmap.get(None)  # default namespace URI if present
+    ns = {
+        "j": jats_ns or "http://jats.nlm.nih.gov",           # JATS
+        "mml": "http://www.w3.org/1998/Math/MathML",
+        "xlink": "http://www.w3.org/1999/xlink",
+    }
+
+    # Title
+    title_el = root.find(".//j:article-title", namespaces=ns)
+    title = _t(title_el).strip() if title_el is not None else None
+
+    # Abstract paragraphs
+    abstract_ps = root.findall(".//j:abstract//j:p", namespaces=ns)
+    abstract = [" ".join(_t(p).split()) for p in abstract_ps if _t(p).strip()]
+
+    # Sections (top-level body/sec). You can recurse if needed.
+    sections = []
+    for sec in root.findall(".//j:body/j:sec", namespaces=ns):
+        sec_title = _t(sec.find("./j:title", namespaces=ns)).strip()
+        paras = [" ".join(_t(p).split()) for p in sec.findall(".//j:p", namespaces=ns)]
+        sections.append({"title": sec_title or None, "paragraphs": paras})
+
+    # Figure & table captions (use XPath union via .xpath)
+    captions_nodes = root.xpath(".//j:fig//j:caption | .//j:table-wrap//j:caption", namespaces=ns)
+    captions = [" ".join(_t(c).split()) for c in captions_nodes if _t(c).strip()]
+
+    # Acknowledgments
+    ack_ps = root.findall(".//j:back/j:ack//j:p", namespaces=ns)
+    acknowledgments = [" ".join(_t(p).split()) for p in ack_ps if _t(p).strip()]
+
+    return {
+        "title": title,
+        "abstract": abstract,
+        "sections": sections,
+        "captions": captions,
+        "acknowledgments": acknowledgments,
+    }
     
 def updated_item_metadata(item_uuid, payload, s):
     url = CONFIG.UPDATE_ITEMS_METADATA.format(item_uuid=item_uuid)
@@ -168,82 +230,6 @@ def updated_item_metadata(item_uuid, payload, s):
         print("Metadata updated successfully!")
     else:
         print("Metadata upload failed", upload_response.text)
-
-def create_and_add_annotations(s, collection_id):
-    items = get_collection_items_by_handle(collection_id, None)
-    for it in items:
-        item_uuid = it["uuid"]
-        name = it["name"]
-        xml_url = it["xml_content"]["content"]
-        article = parse_jats_xml(xml_url)
-        #print(article)
-        
-        title = article['title']
-        abstract = article['abstract']
-        sections = article['sections']
-        print('title', title)
-        print(abstract)
-        keywords = []
-        if len(title) !=0 and len(abstract)!=0:
-            ltp = label_ltp(title, abstract[0], keywords)
-            print(ltp)
-        else:
-            continue
-        print('----------')
-        ltp = True #remove it 
-        threshold_entities = []
-        if len(title) !=0 and len(abstract)!=0 and ltp:
-            text = title+" "+abstract[0]
-            results = annotate_class_wise_text(text)
-            print(type(results))
-
-            per_token = best_label_per_token(results)
-
-            # Example: print token → (class, tag, score)
-            #for t in per_token:
-                #print(f"{t['token']:<15} {t['class'] or 'O':<22} {t['tag']:<18} {t['score']:.3f}")
-
-                # Collapse BIO into entity spans
-                
-            entities = bio_spans(per_token)
-            for e in entities:
-                print(f"[{e['class']}] {e['text']}  (score={e['score']:.3f}, idx={e['start']}..{e['end']-1})")
-                
-                if e['score'] > 0.80 and e['class'] != 'Unit' :
-                    threshold_entities.append(e['text'])
-
-            threshold_entities = list(set(threshold_entities))
-            print(threshold_entities)
-        
-            payload = [
-                        {
-                            "op": "add",
-                            "path": "/metadata/dc.subject",
-                            "value": {"value": entity}
-                        }
-                            for entity in threshold_entities
-                    ]
-            updated_item_metadata(item_uuid, payload, s)
-            #for key, value in results.items():
-                #if key.startswith("Label_"):
-                    #label_name = value
-                    #label_key = key.split("Label_")[1]
-                    #score_key = f"Score_{label_key}"
-                    #score = results.get(score_key)
-                    #print(f"{label_name}: {score}")
-                    
-                    
-            annotated_xml = build_from_bio_dict(results,
-            meta={"doi": doi ,"title": title},
-            run_meta={"annotator":"BERT-CRF"},
-            out_path=name+".ppann.xml"
-    
-    
-    #retrieve_high_quality_annotations(results)
-    #upload_xml_to_renate(s, annotated_xml, bundle_uuid, name)
-    
-    #find high quality metadata
-    
 
 def nfc(s): return unicodedata.normalize("NFC", s)
 
@@ -321,7 +307,7 @@ def bio_to_spans(labels, token_spans, raw_text, entity_type, confidences=None, a
 PP = "https://example.org/ppann/1.0"
 XL = "http://www.w3.org/1999/xlink"
 
-def build_ppann_xml(raw_text, spans_by_type):
+def build_ppann_xml(raw_text, meta, spans_by_type):
     pp = "{%s}" % PP
     xl = "{%s}" % XL
 
@@ -333,14 +319,11 @@ def build_ppann_xml(raw_text, spans_by_type):
     src = etree.SubElement(root, f"{pp}source")
     if "doi" in meta: etree.SubElement(src, f"{pp}doi").text = meta["doi"]
     if "title" in meta: etree.SubElement(src, f"{pp}title").text = meta["title"]
-
-    # provenance
    
-    prov = etree.SubElement(root, f"{pp}provenance")
-    run = etree.SubElement(prov, f"{pp}run", id="r1", timestamp=datetime.utcnow().isoformat()+"Z")
-    etree.SubElement(run, f"{pp}annotator", kind="model").text = run_meta.get("annotator","BERT-CRF (per-class)")
-    ver = etree.SubElement(run, f"{pp}version")
-    if "version" in run_meta: ver.set("code-commit", run_meta["version"])
+    #prov = etree.SubElement(root, f"{pp}provenance")
+    #run = etree.SubElement(prov, f"{pp}run", id="r1", timestamp=datetime.utcnow().isoformat()+"Z")
+    #etree.SubElement(run, f"{pp}annotator", kind="model").text = run_meta.get("annotator","BERT-CRF (per-class)")
+    #ver = etree.SubElement(run, f"{pp}version")
 
     # section with the exact text you used to label
     secs = etree.SubElement(root, f"{pp}sections")
@@ -348,30 +331,20 @@ def build_ppann_xml(raw_text, spans_by_type):
     etree.SubElement(sec, f"{pp}text").text = raw_text
 
     # annotations
-    ann = etree.SubElement(root, f"{pp}annotations", **{"run-ref":"r1"})
+    ann = etree.SubElement(root, f"{pp}annotations")
     ents = etree.SubElement(ann, f"{pp}entities")
-    etree.SubElement(ann, f"{pp}entity-attributes")   # kept for future use
-    etree.SubElement(ann, f"{pp}relations")           # kept for future use
-    etree.SubElement(ann, f"{pp}section-labels")      # kept for future use
-    etree.SubElement(ann, f"{pp}sentences")           # optional
-
-    all_spans = []
-    for etype, spans in spans_by_type.items():
-        for sp in spans:
-            sp = dict(sp)
-            sp["type"] = etype
-            all_spans.append(sp)
-
-    all_spans.sort(key=lambda s: (int(s["start"]), int(s["end"])))
-    # emit entities
+    etree.SubElement(ann, f"{pp}entity-attributes")
+    etree.SubElement(ann, f"{pp}relations")
+    etree.SubElement(ann, f"{pp}section-labels")
+    etree.SubElement(ann, f"{pp}sentences")
 
     eid = 0
-    for sp in all_spans:
+    for sp in kg['entities']:
         eid += 1
         e = etree.SubElement(ents, f"{pp}entity")
         e.set("id", f"e{eid}")
         e.set("type", sp["type"])
-        e.set("section", sp.get("section", "sec-main"))
+        #e.set("section", sp.get("section", "sec-main"))
         e.set("start", str(sp["start"]))
         e.set("end", str(sp["end"]))
         e.set("text", sp["text"])
@@ -436,55 +409,6 @@ def sec_to_dict(sec):
 # --- Main parser -------------------------------------------------------------
 def _t(el):
     return "" if el is None else "".join(el.itertext())
-
-def parse_jats_xml(xml_url):
-    r = requests.get(xml_url, stream=True)
-    r.raise_for_status()
-    r.raw.decode_content = True
-
-    parser = etree.XMLParser(resolve_entities=False, no_network=True, recover=True, huge_tree=True)
-    tree = etree.parse(r.raw, parser)
-    root = tree.getroot()
-
-    # Detect default ns (JATS commonly uses a default)
-    jats_ns = root.nsmap.get(None)  # default namespace URI if present
-    ns = {
-        "j": jats_ns or "http://jats.nlm.nih.gov",           # JATS
-        "mml": "http://www.w3.org/1998/Math/MathML",
-        "xlink": "http://www.w3.org/1999/xlink",
-    }
-
-    # Title
-    title_el = root.find(".//j:article-title", namespaces=ns)
-    title = _t(title_el).strip() if title_el is not None else None
-
-    # Abstract paragraphs
-    abstract_ps = root.findall(".//j:abstract//j:p", namespaces=ns)
-    abstract = [" ".join(_t(p).split()) for p in abstract_ps if _t(p).strip()]
-
-    # Sections (top-level body/sec). You can recurse if needed.
-    sections = []
-    for sec in root.findall(".//j:body/j:sec", namespaces=ns):
-        sec_title = _t(sec.find("./j:title", namespaces=ns)).strip()
-        paras = [" ".join(_t(p).split()) for p in sec.findall(".//j:p", namespaces=ns)]
-        sections.append({"title": sec_title or None, "paragraphs": paras})
-
-    # Figure & table captions (use XPath union via .xpath)
-    captions_nodes = root.xpath(".//j:fig//j:caption | .//j:table-wrap//j:caption", namespaces=ns)
-    captions = [" ".join(_t(c).split()) for c in captions_nodes if _t(c).strip()]
-
-    # Acknowledgments
-    ack_ps = root.findall(".//j:back/j:ack//j:p", namespaces=ns)
-    acknowledgments = [" ".join(_t(p).split()) for p in ack_ps if _t(p).strip()]
-
-    return {
-        "title": title,
-        "abstract": abstract,
-        "sections": sections,
-        "captions": captions,
-        "acknowledgments": acknowledgments,
-    }
-
 
 def get_xml():
     #get xml from renate
@@ -560,51 +484,77 @@ def annotate_class_wise_text(text):
     results.update(entity_scores)
     return results
 
+def create_and_add_annotations(s, collection_id):
+    items = get_collection_items_by_handle(collection_id, None)
+    for it in items:
+        item_uuid = it["uuid"]
+        name = it["name"]
+        xml_url = it["xml_content"]["content"]
+        article = parse_jats_xml(xml_url)
+        #print(article)
+        
+        title = article['title']
+        abstract = article['abstract']
+        sections = article['sections']
+        print('title', title)
+        print(abstract)
+        keywords = []
+        if len(title) !=0 and len(abstract)!=0:
+            ltp = label_ltp(title, abstract[0], keywords)
+            print(ltp)
+        else:
+            continue
+        print('----------')
+        ltp = True #remove it 
+        threshold_entities = []
+        if len(title) !=0 and len(abstract)!=0 and ltp:
+            text = title+" "+abstract[0]
+            results = generate_annotations(text)
+            print(type(results))
 
-def retrieve_high_quality_annotations():
-    print()
+            #per_token = best_label_per_token(results)
 
-def enrich_paper_metadata():
-    print()
+            # Example: print token → (class, tag, score)
+            #for t in per_token:
+                #print(f"{t['token']:<15} {t['class'] or 'O':<22} {t['tag']:<18} {t['score']:.3f}")
 
-def create_annotated_xml():
-    print()
+                # Collapse BIO into entity spans
+                
+            #entities = bio_spans(per_token)
+            for e in results['entities']:
+                print(f"[{e['text']}] {e['type']} (score={e['confidence']:.3f}")
+                
+                if e['confidence'] > 0.80 and e['type'] != 'Unit' :
+                    threshold_entities.append(e['text'])
 
-def decode(label_ids, input_ids, offset_mapping, id2label, token_confidences):
-    result = []
-    for k in range(len(label_ids)):  # batch
-        words = []
-        labels = []
-        confs = []  # NEW
-
-        for i in range(len(label_ids[k])):  # tokens
-            start_ind, end_ind = offset_mapping[k][i]
-            word = tokenizer.convert_ids_to_tokens([int(input_ids[k][i])])[0]
-            is_subword = end_ind - start_ind != len(word)
-
-            if is_subword:
-                if word.startswith('##') and words:
-                    # merge subword and aggregate confidence (min over pieces)
-                    words[-1] += word[2:]
-                    confs[-1] = min(confs[-1], float(token_confidences[k][i]))
-                # else: ignore stray subword at start
-            else:
-                words.append(word)
-                labels.append(id2label[int(label_ids[k][i])])
-                confs.append(float(token_confidences[k][i]))  # NEW
-        words[len(words)-1] = words[len(words)-1]+"."
-        result.append({'words': words, 'labels': labels, 'confidences': confs})  # NEW
-    return result
-
-def clean_and_split_text(text):
-    """Cleans text by removing unwanted characters and splits into sentences."""
-    # Remove specific unwanted characters
-    text = text.replace('\n', ' ')  # Replace newlines with space to avoid joining words
-
-    # Split text into sentences by '.'
-    sentences = text.split('.')
+            threshold_entities = list(set(threshold_entities))
+            print(threshold_entities)
+        
+            payload = [
+                        {
+                            "op": "add",
+                            "path": "/metadata/dc.subject",
+                            "value": {"value": entity}
+                        }
+                            for entity in threshold_entities
+                    ]
+            updated_item_metadata(item_uuid, payload, s)
+            #for key, value in results.items():
+                #if key.startswith("Label_"):
+                    #label_name = value
+                    #label_key = key.split("Label_")[1]
+                    #score_key = f"Score_{label_key}"
+                    #score = results.get(score_key)
+                    #print(f"{label_name}: {score}")
+                    
+                    
+            annotated_xml = build_from_bio_dict(results,
+            meta={"doi": doi ,"title": title},
+            run_meta={"annotator":"BERT-CRF"},
+            out_path=name+".ppann.xml")
     
-    # Strip whitespace from each sentence
-    cleaned_sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
     
-    return cleaned_sentences
+    #retrieve_high_quality_annotations(results)
+    #upload_xml_to_renate(s, annotated_xml, bundle_uuid, name)
+    
+    #find high quality metadata

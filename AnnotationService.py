@@ -489,6 +489,8 @@ def create_and_add_annotations(s, collection_id):
     for it in items:
         item_uuid = it["uuid"]
         name = it["name"]
+        #get metadata here
+        #keywords = it["metadata"] get keywords from it
         xml_url = it["xml_content"]["content"]
         article = parse_jats_xml(xml_url)
         #print(article)
@@ -529,14 +531,15 @@ def create_and_add_annotations(s, collection_id):
 
             threshold_entities = list(set(threshold_entities))
             print(threshold_entities)
-        
+            merged_keywords = list(dict.fromkeys(threshold_entities + keywords))
+
             payload = [
                         {
                             "op": "add",
                             "path": "/metadata/dc.subject",
                             "value": {"value": entity}
                         }
-                            for entity in threshold_entities
+                            for entity in merged_keywords
                     ]
             updated_item_metadata(item_uuid, payload, s)
             #for key, value in results.items():
@@ -547,11 +550,9 @@ def create_and_add_annotations(s, collection_id):
                     #score = results.get(score_key)
                     #print(f"{label_name}: {score}")
                     
-                    
+            #pass entities
             annotated_xml = build_from_bio_dict(results,
-            meta={"doi": doi ,"title": title},
-            run_meta={"annotator":"BERT-CRF"},
-            out_path=name+".ppann.xml")
+            meta={"doi": doi ,"title": title})
     
     
     #retrieve_high_quality_annotations(results)

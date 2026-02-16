@@ -233,7 +233,7 @@ def pick_pdf_and_xml(bitstreams_json):
     return {"pdf": create_object(pdf), "xml": create_object(xml)}
 
 def get_item_information(item_id):
-    response = requests.get(f'{ITEMS_ENDPOINT}/{item_id}')
+    response = requests.get(f'{CONFIG.ITEMS_ENDPOINT}/{item_id}')
     response.raise_for_status()
     item_info = response.json()
     return item_info
@@ -292,6 +292,7 @@ def get_collection_items_by_handle(collection_id: str, since: None):
     for item in items:
         item_uuid = item["uuid"]
         name = item["name"]
+        #get item metadata here item["metadata"] then [dc.subject.other] then [value]
         bundles_url = item["_links"]["bundles"]["href"]
 
         # your existing helper: should find ORIGINAL, first PDF, and return content URL + bundle uuid
@@ -304,6 +305,7 @@ def get_collection_items_by_handle(collection_id: str, since: None):
         results.append({
             "uuid": item_uuid,
             "name": info['name'],
+            #"keywords": add keywords here
             "bundles_url": bundles_url,
             "pdf_content": info['content']['pdf'],
             "xml_content": info['content']['xml'],

@@ -8,7 +8,7 @@ import requests
 import os.path
 #load_dotenv()
 import os
-import yaml
+#import yaml
 from urllib.parse import urljoin
 import json
 from datetime import datetime, timezone
@@ -16,7 +16,6 @@ from urllib.parse import quote
 # Load config.yml once
 from config_loader import CONFIG
 from io import BytesIO
-import grobid_tei_xml
 
 
 directory='paper-pdfs'
@@ -290,6 +289,8 @@ def get_collection_items_by_handle(collection_id: str, since: None):
 
     results = []
     for item in items:
+        metadata = item["metadata"]
+        subjects = [x["value"] for x in metadata.get("dc.subject", [])]
         item_uuid = item["uuid"]
         name = item["name"]
         #get item metadata here item["metadata"] then [dc.subject.other] then [value]
@@ -305,7 +306,7 @@ def get_collection_items_by_handle(collection_id: str, since: None):
         results.append({
             "uuid": item_uuid,
             "name": info['name'],
-            #"keywords": add keywords here
+            "keywords": subjects,
             "bundles_url": bundles_url,
             "pdf_content": info['content']['pdf'],
             "xml_content": info['content']['xml'],
@@ -326,7 +327,7 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int =
     items = get_collection_items_by_handle(collection_id, since=last_run)
     
     processed = 0
-    for it in items:
+    for it in items[2:3]: #remove 
         item_uuid = it["uuid"]
         name = it["name"]
         name = name.split(".")[0]+"-jats"
@@ -339,8 +340,6 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int =
         upload_xml_to_renate(s, xml, it['bundle_uuid'], name)
 
         processed += 1
-        if processed > 2:
-            break
         print(f"[OK] {item_uuid} → XML uploaded")
 
     save_last_run(collection_id)

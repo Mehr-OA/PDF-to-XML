@@ -1,47 +1,23 @@
 #from dotenv import load_dotenv
 from lxml import etree
 #load_dotenv()
-from transformers import BertTokenizerFast
-from models import BertCRF
-import torch
 import gc
 from lxml import etree
 from pathlib import Path
 from lxml import etree
 import unicodedata
 from datetime import datetime
-from FileService import get_collection_items_by_handle
+from FileService import get_collection_items_by_handle, upload_xml_to_renate
 import requests
 import re
 from typing import Iterable, Union, List
 from config_loader import CONFIG
 from inference import generate_annotations
 
-tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
-
 # ---------------- Detokenization & offsets ----------------
 NO_SPACE_BEFORE = {".", ",", ":", ";", "!", "?", "%", ")", "]", "}", "’", "”"}
 NO_SPACE_AFTER  = {"(", "[", "{", "£", "$", "€", "“"}
 GLUE_TOKENS     = {"-","–","—","/"}  # attach without surrounding spaces
-
-entities = [
-    'DiagnosticDevice',
-    'ElectrodeConfiguration',
-    'ElectrodeMaterial',
-    'Experiment',
-    'Modelling',
-    'PhysicalEffect',
-    'PlasmaApplication',
-    'PlasmaMedium',
-    'PlasmaProperties',
-    'PlasmaTarget',
-    'Unit',
-    'PhysicalQuantity',
-    'Species',
-    'PowerSupply',
-    'DischargeRegime',
-    'PlasmaSource',
-]
 
 # >>> Fill these with your own terms (examples included)
 LTP_KEYWORDS = [
@@ -61,16 +37,37 @@ EXCLUSIONS = [
     "burning plasma", "inertial confinement", "laser plasma"
 ]
 
-# Precompile for speed
-_POS_PATS = [_word_boundary_pattern(t) for t in LTP_KEYWORDS]
-_NEG_PATS = [_word_boundary_pattern(t) for t in EXCLUSIONS]
-
 def _word_boundary_pattern(term: str) -> re.Pattern:
     words = term.strip().split()
     # \b around each alnum chunk; allow hyphens inside words
     parts = [r"\b" + re.escape(w).replace(r"\-", r"[\-–]") + r"\b" for w in words]
     pat = r"\s+".join(parts)
     return re.compile(pat, flags=re.IGNORECASE)
+
+# Precompile for speed
+_POS_PATS = [_word_boundary_pattern(t) for t in LTP_KEYWORDS]
+_NEG_PATS = [_word_boundary_pattern(t) for t in EXCLUSIONS]
+
+def clean_keyword(s: str) -> str:
+    if s is None:
+        return ""
+
+    # strip quotes/spaces
+    s = str(s).strip().strip("'").strip('"')
+
+    # remove punctuation/brackets (turn into spaces so words don't merge)
+    s = re.sub(r"[^\w\s]", " ", s)
+
+    # normalize whitespace + lowercase
+    s = re.sub(r"\s+", " ", s).strip().lower()
+
+    return s
+
+def clean_keyword_objects(keyword_list):
+    for obj in keyword_list:
+        if "text" in obj:
+            obj["text"] = clean_keyword(obj["text"])
+    return keyword_list
 
 def clean_and_split_text(text):
     """Cleans text by removing unwanted characters and splits into sentences."""
@@ -113,67 +110,6 @@ def label_ltp(title: str, abstract: str, paper_keywords: Union[str, Iterable[str
     is_ltp = (len(pos_hits) > 0) and (len(neg_hits) == 0)
 
     return is_ltp
-    
-def best_label_per_token(results):
-    tokens = results["Tokens"]
-    # find all class names from keys like "Label_X"
-    classes = [k.split("Label_", 1)[1] for k in results.keys() if k.startswith("Label_")]
-    classes.sort()
-
-    out = []
-    for i, tok in enumerate(tokens):
-        best = {"token": tok, "class": None, "tag": "O", "score": 0.0}
-        for c in classes:
-            tag = results[f"Label_{c}"][i]
-            score = results[f"Score_{c}"][i]
-            if tag != "O" and score >= best["score"]:
-                best = {"token": tok, "class": c, "tag": tag, "score": float(score)}
-        out.append(best)
-    return out
-
-def bio_spans(token_labels):
-    """
-    Collapse BIO tags into spans:
-    token_labels: list of {"token","class","tag","score"}
-    Returns spans with aggregated score (mean) and text.
-    """
-    spans = []
-    cur = None
-
-    for idx, t in enumerate(token_labels):
-        tag, cls, tok, sc = t["tag"], t["class"], t["token"], t["score"]
-
-        if tag.startswith("B-"):
-            # start a new span
-            if cur:
-                # close previous
-                cur["score"] = sum(cur["scores"]) / max(1, len(cur["scores"]))
-                del cur["scores"]
-                spans.append(cur)
-            cur = {"class": cls, "start": idx, "end": idx + 1, "tokens": [tok], "scores": [sc]}
-        elif tag.startswith("I-") and cur and cls == cur["class"]:
-            # continue current span
-            cur["end"] = idx + 1
-            cur["tokens"].append(tok)
-            cur["scores"].append(sc)
-        else:
-            # outside any entity
-            if cur:
-                cur["score"] = sum(cur["scores"]) / max(1, len(cur["scores"]))
-                del cur["scores"]
-                spans.append(cur)
-                cur = None
-
-    if cur:
-        cur["score"] = sum(cur["scores"]) / max(1, len(cur["scores"]))
-        del cur["scores"]
-        spans.append(cur)
-
-    # add text for convenience
-    for sp in spans:
-        sp["text"] = " ".join(sp["tokens"])
-
-    return spans
 
 def parse_jats_xml(xml_url):
     r = requests.get(xml_url, stream=True)
@@ -211,16 +147,12 @@ def parse_jats_xml(xml_url):
     captions_nodes = root.xpath(".//j:fig//j:caption | .//j:table-wrap//j:caption", namespaces=ns)
     captions = [" ".join(_t(c).split()) for c in captions_nodes if _t(c).strip()]
 
-    # Acknowledgments
-    ack_ps = root.findall(".//j:back/j:ack//j:p", namespaces=ns)
-    acknowledgments = [" ".join(_t(p).split()) for p in ack_ps if _t(p).strip()]
 
     return {
         "title": title,
         "abstract": abstract,
         "sections": sections,
         "captions": captions,
-        "acknowledgments": acknowledgments,
     }
     
 def updated_item_metadata(item_uuid, payload, s):
@@ -307,79 +239,57 @@ def bio_to_spans(labels, token_spans, raw_text, entity_type, confidences=None, a
 PP = "https://example.org/ppann/1.0"
 XL = "http://www.w3.org/1999/xlink"
 
-def build_ppann_xml(raw_text, meta, spans_by_type):
-    pp = "{%s}" % PP
-    xl = "{%s}" % XL
+from lxml import etree
 
-    root = etree.Element(f"{pp}document", nsmap={"ppann": PP, "xlink": XL})
+from lxml import etree
+
+def build_ppann_xml(bio_dict, meta):
+    root = etree.Element("document")
     root.set("version", "1.0")
 
-    # source meta
-  
-    src = etree.SubElement(root, f"{pp}source")
-    if "doi" in meta: etree.SubElement(src, f"{pp}doi").text = meta["doi"]
-    if "title" in meta: etree.SubElement(src, f"{pp}title").text = meta["title"]
-   
-    #prov = etree.SubElement(root, f"{pp}provenance")
-    #run = etree.SubElement(prov, f"{pp}run", id="r1", timestamp=datetime.utcnow().isoformat()+"Z")
-    #etree.SubElement(run, f"{pp}annotator", kind="model").text = run_meta.get("annotator","BERT-CRF (per-class)")
-    #ver = etree.SubElement(run, f"{pp}version")
+    # source
+    src = etree.SubElement(root, "source")
+    if meta.get("doi"):
+        etree.SubElement(src, "doi").text = meta["doi"]
+    if meta.get("title"):
+        etree.SubElement(src, "title").text = meta["title"]
 
-    # section with the exact text you used to label
-    secs = etree.SubElement(root, f"{pp}sections")
-    sec = etree.SubElement(secs, f"{pp}section", id="sec-main", type="main", title="MainText")
-    etree.SubElement(sec, f"{pp}text").text = raw_text
+    # annotations container
+    ann = etree.SubElement(root, "annotations")
+    entities_el = etree.SubElement(ann, "entities")
+    etree.SubElement(ann, "entity-attributes")
+    etree.SubElement(ann, "relations")
+    etree.SubElement(ann, "section-labels")
+    etree.SubElement(ann, "sentences")
 
-    # annotations
-    ann = etree.SubElement(root, f"{pp}annotations")
-    ents = etree.SubElement(ann, f"{pp}entities")
-    etree.SubElement(ann, f"{pp}entity-attributes")
-    etree.SubElement(ann, f"{pp}relations")
-    etree.SubElement(ann, f"{pp}section-labels")
-    etree.SubElement(ann, f"{pp}sentences")
+    # normalize entities
+    if isinstance(bio_dict, dict):
+        entities = bio_dict.get("entities", [])
+    else:
+        entities = bio_dict
 
+    # add entities
     eid = 0
-    for sp in kg['entities']:
+    for ent in entities:
         eid += 1
-        e = etree.SubElement(ents, f"{pp}entity")
-        e.set("id", f"e{eid}")
-        e.set("type", sp["type"])
-        #e.set("section", sp.get("section", "sec-main"))
-        e.set("start", str(sp["start"]))
-        e.set("end", str(sp["end"]))
-        e.set("text", sp["text"])
-        if "confidence" in sp:
-            e.set("confidence", f'{float(sp["confidence"]):.4f}')
+        e_el = etree.SubElement(entities_el, "entity")
+        e_el.set("id", f"e{eid}")
+        e_el.set("type", ent.get("type", "Unknown"))
+        if ent.get("text"):
+            e_el.set("text", ent["text"])
+        if ent.get("confidence") is not None:
+            e_el.set("confidence", str(ent["confidence"]))
 
-    # vocab
-    vocab = etree.SubElement(root, f"{pp}vocab")
-    for etype in sorted(spans_by_type.keys()):
-        etree.SubElement(vocab, f"{pp}entity-type", id=etype, iri=f"https://example.org/plasma#{etype}")
 
-    xml_bytes = etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True)
+    xml_bytes = etree.tostring(
+        root,
+        xml_declaration=True,
+        encoding="UTF-8",
+        pretty_print=True
+    )
     return xml_bytes
 
-def build_from_bio_dict(bio_dict, out_path="annotations.ppann.xml"):
-    tokens = bio_dict["Tokens"]
-    raw_text, token_spans = detok_with_offsets(tokens)
 
-    # NEW: collect confidences per entity type
-    confidences_by_type = {
-        k.replace("Score_", "", 1): v
-        for k, v in bio_dict.items()
-        if k.startswith("Score_")
-    }
-
-    spans_by_type = {}
-    for key, labels in bio_dict.items():
-        if not key.startswith("Label_"):
-            continue
-        etype = key.replace("Label_", "", 1)
-        confs = confidences_by_type.get(etype)  # may be None
-        spans = bio_to_spans(labels, token_spans, raw_text, etype, confs)  # <— pass confs
-        spans_by_type[etype] = spans
-
-    return build_ppann_xml(raw_text, spans_by_type)
 
 #when physics papers will be added, someone will invoke the script. The script should load the physics files and generate their annotations.
 
@@ -422,85 +332,24 @@ def read_jats_xml(file_path):
     #print('sections', art['sections'])
     annotate_class_wise_text(art['abstract'][0])
 
-def annotate_class_wise_text(text):
-    #load each class model
-    #annotate text
-    text = clean_and_split_text(text)
-    inputs = tokenizer(text, max_length=512, padding=True, truncation=True, return_tensors='pt',
-                   return_offsets_mapping=True)
-    offset_mapping = inputs.pop("offset_mapping").cpu().numpy().tolist()
-
-
-    entity_labels = {f"Label_{entity}": [] for entity in entities}
-    entity_scores = {f"Score_{entity}": [] for entity in entities}
-
-
-    results = {"Tokens": []}
-
-    for entity in entities:
-        tag = entity
-        print(f"🚀 Processing entity: {tag}")
-        id2label = [
-            'O',
-            'B-'+tag,        'I-'+tag
-        ]
-
-        with torch.no_grad():
-            model = BertCRF.from_pretrained(f'trained_models/{tag}', num_labels=3)
-            outputs = model(**inputs)
-
-            emissions = model.classifier(model.bert(**inputs)[0])           # (B, T, 3)
-            probs = torch.softmax(emissions, dim=-1)                        # (B, T, 3)
-
-            # probability of the CRF-decoded tag at each token (simple & aligned)
-            probs_for_crf_tag = probs.gather(-1, outputs[1].unsqueeze(-1)).squeeze(-1)  # (B, T)
-
-        data = decode(
-            outputs[1].numpy().tolist(),
-            inputs['input_ids'].numpy().tolist(),
-            offset_mapping,
-            id2label,
-            probs_for_crf_tag.cpu().numpy().tolist()   # NEW: pass confidences
-        )
-        #print(data)
-        #predicted_entities = predicted_entities[0]
-        #print(data)
-
-
-        if not results["Tokens"]: 
-            for sentence_data in data:
-                results["Tokens"].extend(sentence_data["words"])
-
-        # Append corresponding labels
-        for i, sentence_data in enumerate(data):
-            entity_labels[f"Label_{tag}"].extend(sentence_data["labels"])
-            entity_scores[f"Score_{tag}"].extend(sentence_data["confidences"])
-    
-        del model, outputs, data  # Delete large objects
-        torch.cuda.empty_cache()  # Clear CUDA memory (if using GPU)
-        gc.collect()
-
-    results.update(entity_labels)
-    results.update(entity_scores)
-    return results
-
 def create_and_add_annotations(s, collection_id):
     items = get_collection_items_by_handle(collection_id, None)
-    for it in items:
+    for it in items[2:3]:
+        #print('item', it)
         item_uuid = it["uuid"]
+        bundle_uuid = it["bundle_uuid"]
         name = it["name"]
         #get metadata here
-        #keywords = it["metadata"] get keywords from it
+        keywords = it["keywords"]
         xml_url = it["xml_content"]["content"]
         article = parse_jats_xml(xml_url)
-        #print(article)
+        print(article)
         
         title = article['title']
         abstract = article['abstract']
         sections = article['sections']
-        print('title', title)
-        print(abstract)
-        keywords = []
+        #print('title', title)
+        print(sections)
         if len(title) !=0 and len(abstract)!=0:
             ltp = label_ltp(title, abstract[0], keywords)
             print(ltp)
@@ -509,11 +358,35 @@ def create_and_add_annotations(s, collection_id):
         print('----------')
         ltp = True #remove it 
         threshold_entities = []
-        if len(title) !=0 and len(abstract)!=0 and ltp:
-            text = title+" "+abstract[0]
-            results = generate_annotations(text)
-            print(type(results))
+        text_parts = []
 
+        # add title
+        if title:
+            text_parts.append(title)
+
+        # add abstract
+        if abstract:
+            text_parts.append(abstract[0])
+
+        # add sections
+        for section in sections:
+            sec_title = section.get("title")
+            paragraphs = section.get("paragraphs", [])
+
+            if sec_title:
+                text_parts.append(sec_title)
+
+            for para in paragraphs:
+                if para:
+                    text_parts.append(para)
+
+            # final concatenated text
+        text = " ".join(text_parts)
+            
+        
+        response = generate_annotations(text)
+        entities = response.get("entities", [])
+        updated_entities = clean_keyword_objects(entities)
             #per_token = best_label_per_token(results)
 
             # Example: print token → (class, tag, score)
@@ -523,25 +396,36 @@ def create_and_add_annotations(s, collection_id):
                 # Collapse BIO into entity spans
                 
             #entities = bio_spans(per_token)
-            for e in results['entities']:
-                print(f"[{e['text']}] {e['type']} (score={e['confidence']:.3f}")
-                
-                if e['confidence'] > 0.80 and e['type'] != 'Unit' :
-                    threshold_entities.append(e['text'])
 
+        for e in updated_entities:  # or whatever your source list is
+            text = e['text'].strip().lower()
+            
+            if (
+                text not in keywords and
+                e['confidence'] > 0.95 and
+                e['type'] != 'G#Unit' and
+                len(text.split()) > 1
+            ):
+                print(f"[{text}] {e['type']} (score={e['confidence']:.3f})")
+                threshold_entities.append(text)
+
+            print("----")
+
+            # remove duplicates
             threshold_entities = list(set(threshold_entities))
-            print(threshold_entities)
-            merged_keywords = list(dict.fromkeys(threshold_entities + keywords))
+        print(len(threshold_entities))
 
-            payload = [
-                        {
-                            "op": "add",
-                            "path": "/metadata/dc.subject",
-                            "value": {"value": entity}
-                        }
-                            for entity in merged_keywords
-                    ]
-            updated_item_metadata(item_uuid, payload, s)
+               
+        #print(merged_keywords)
+        payload = [
+                    {
+                        "op": "add",
+                        "path": "/metadata/dc.subject",
+                        "value": {"value": entity}
+                    }
+                        for entity in threshold_entities
+                ]
+        #updated_item_metadata(item_uuid, payload, s)
             #for key, value in results.items():
                 #if key.startswith("Label_"):
                     #label_name = value
@@ -551,11 +435,10 @@ def create_and_add_annotations(s, collection_id):
                     #print(f"{label_name}: {score}")
                     
             #pass entities
-            annotated_xml = build_from_bio_dict(results,
-            meta={"doi": doi ,"title": title})
-    
+        xml = build_ppann_xml(updated_entities, meta={"doi": '10.' , "title": title})
     
     #retrieve_high_quality_annotations(results)
-    #upload_xml_to_renate(s, annotated_xml, bundle_uuid, name)
+        name = name.split(".")[0]+"-annotations"
+        #upload_xml_to_renate(s, xml, bundle_uuid, (name))
     
     #find high quality metadata

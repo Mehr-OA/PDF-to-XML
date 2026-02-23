@@ -4,7 +4,7 @@ from AuthService import get_authenticated_session
 
 
 s = get_authenticated_session()
-#add_xmls_in_renate(s, "10d7aac1-a01e-43f7-be42-8280f16160c5")
+add_xmls_in_renate(s, "10d7aac1-a01e-43f7-be42-8280f16160c5")
 
 #only for physics papers
 #considering only physics collection

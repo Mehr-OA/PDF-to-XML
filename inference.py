@@ -1144,10 +1144,9 @@ def build_knowledge_graph(predictions, output_file='knowledge_graph.json'):
     
     return kg
 
-def process_paper_text(paper_text, output_folder, model, tokenizer, processor, device, 
-                       grobid_url, batch_size=8, save_txt=True):
+def process_paper_text(paper_text, model, tokenizer, processor, device, grobid_url, batch_size=8):
     
-    os.makedirs(output_folder, exist_ok=True)
+    #os.makedirs(output_folder, exist_ok=True)
     
     # Get all PDF files
     #pdf_files = glob.glob(os.path.join(pdf_folder, "*.pdf"))
@@ -1187,6 +1186,7 @@ def process_paper_text(paper_text, output_folder, model, tokenizer, processor, d
     #logger.info(f"Completed processing {pdf_name}")
     #logger.info(f"  - Entities: {kg_file}")
     logger.info(f"  - Total entities: {len(kg['entities'])}")
+    return kg
 
 
 def generate_annotations(paper_text):
@@ -1229,16 +1229,16 @@ def generate_annotations(paper_text):
     model.to(device)
     model.eval()
     
-    logger.info("Model loaded successfully")
-
-    process_paper_text(
-        pdf_folder, 
-        output_folder, 
+    logger.info("Model loaded successfully")                      
+                           
+    response = process_paper_text(
+        paper_text, 
         model, 
         tokenizer, 
         processor, 
         device,
         grobid_url,
-        batch_size,
-        save_txt
+        batch_size
     )
+    
+    return response

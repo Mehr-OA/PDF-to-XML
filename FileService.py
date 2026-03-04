@@ -16,10 +16,11 @@ from urllib.parse import quote
 # Load config.yml once
 from config_loader import CONFIG
 from io import BytesIO
+from tqdm import tqdm
 
 
 directory='paper-pdfs'
-GROBID_API_URL = 'http://localhost:8070/api/processFulltextDocument'
+GROBID_API_URL = CONFIG.GROBID_API_URL
 
 CURSOR_FILE = "last_run.json"
 
@@ -55,8 +56,6 @@ def save_last_run(collection_id):
     print(f"[INFO] Saved last run for {collection_id}: {file_data[collection_id]['last_run']}")
 
 def pdf_to_xml(pdf_url):
-    #file = open(pdf_file, 'rb')
-    #response = requests.post(GROBID_API_URL, files={'input': file})
     pdf_file = download_item_content(pdf_url)
     pdf_file_content = {"input": ("file.pdf", BytesIO(pdf_file), "application/pdf")}
     response = requests.post(GROBID_API_URL, files=pdf_file_content)
@@ -64,17 +63,6 @@ def pdf_to_xml(pdf_url):
         xml_tree = etree.fromstring(response.content)
         xml = convert_tei_to_jats(xml_tree)
         return xml
-        #with open("output.jats.xml", "wb") as f:
-            #f.write(xml)
-        #print(xml)
-    #else:
-        #return "File cannot be parsed"
-
-#pass handle of the collection
-#get all pdfs published after the date given in the log file
-#use API to get all papers from the collection using the date
-#convert all pdfs to xml
-#save a log with the date till the files have been processed
 
 def pdf_to_txt():
     for filename in os.listdir(directory):
@@ -171,12 +159,17 @@ def convert_tei_to_jats(tei_xml):
     #return collections
 
 def get_items_for_collection(collection_id, since=None):
+    print(f"Retrieving items from a collection {collection_id}")
+
     items = []
     page = 0
-    page_size=100
+    page_size = 100
+
     base_url = f"{CONFIG.COLLECTION_ITEMS_ENDPOINT}{collection_id}&size={page_size}&page={page}"
     next_url = base_url
-    
+
+    pbar = tqdm(desc="Retrieving items", unit=" item")
+
     while next_url:
         response = requests.get(next_url)
         response.raise_for_status()
@@ -184,22 +177,31 @@ def get_items_for_collection(collection_id, since=None):
 
         search_result = data.get("_embedded", {}).get("searchResult", {})
         collection_items = search_result.get("_embedded", {}).get("objects", [])
+
         if not collection_items:
             break
-        
+
         for item in collection_items:
             item_obj = (item.get("_embedded") or {}).get("indexableObject") or {}
             if not item_obj:
                 continue
+
             if since:
                 lm = item_obj.get("lastModified")
                 if not lm:
                     continue
                 if lm < since:
                     continue
+
             items.append(item_obj)
+
+            pbar.update(1)   # ← progress increases
+
         next_url = search_result.get("_links", {}).get("next", {}).get("href")
-    #print(len(items))
+
+    pbar.close()
+
+    print(f"Retrieved {len(items)} items")
     return items
     
 def pick_pdf_and_xml(bitstreams_json):
@@ -238,7 +240,6 @@ def get_item_information(item_id):
     return item_info
 
 def get_item_content(item_id, bundle_links):
-    #print(bundle_links)
     item_content = requests.get(bundle_links).json()
     bitstream_url=''
     bundle_uuid = ''
@@ -271,8 +272,6 @@ def upload_xml_to_renate(s, xml, bundle_uuid, name):
     files = {
         "file": (f"{name}.xml", BytesIO(xml), 'application/json')
     }
-    
-    #print(files)
    
     url = CONFIG.UPLOAD_BITSTREAMS_ENDPOINT.format(bundle_uuid=bundle_uuid)
     upload_response = s.post(url, files=files)
@@ -283,32 +282,28 @@ def upload_xml_to_renate(s, xml, bundle_uuid, name):
     
 
 def get_collection_items_by_handle(collection_id: str, since: None):
-    print(f"Collection ID: {collection_id}")
-
     items = get_items_for_collection(collection_id, since)
 
     results = []
-    for item in items:
+    print("Retreiving papers metadata...")
+
+    for item in tqdm(items, desc="Processing items"):
         metadata = item["metadata"]
         subjects = [x["value"] for x in metadata.get("dc.subject", [])]
         item_uuid = item["uuid"]
-        name = item["name"]
-        #get item metadata here item["metadata"] then [dc.subject.other] then [value]
         bundles_url = item["_links"]["bundles"]["href"]
-
-        # your existing helper: should find ORIGINAL, first PDF, and return content URL + bundle uuid
         info = get_item_content(item_uuid, bundles_url)
-        if len(info['content']["pdf"]) == 0:
-            #print(f"[SKIP] {item_uuid} no PDF content URL found")
+        pdf = info.get("content", {}).get("pdf")
+
+        if not pdf:
             continue
 
-        #print(info)
         results.append({
             "uuid": item_uuid,
             "name": info['name'],
             "keywords": subjects,
             "bundles_url": bundles_url,
-            "pdf_content": info['content']['pdf'],
+            "pdf_content": pdf,
             "xml_content": info['content']['xml'],
             "bundle_uuid": info["bundle_uuid"]
         })
@@ -327,17 +322,15 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int =
     items = get_collection_items_by_handle(collection_id, since=last_run)
     
     processed = 0
-    for it in items[2:3]: #remove 
+    for it in tqdm(items, desc="PDFs to XML"):
         item_uuid = it["uuid"]
         name = it["name"]
         name = name.split(".")[0]+"-jats"
         pdf_url = it["pdf_content"]["content"]
-        #print(it['bundle_uuid'])
+        
         xml = pdf_to_xml(pdf_url)    
-        #download pdf
-        # 2) Upload XML back to the item (item endpoint; no manual headers/cookies)
-        #    Use item endpoint; bundleName="XML" (or whatever you use)
-        upload_xml_to_renate(s, xml, it['bundle_uuid'], name)
+        
+        #upload_xml_to_renate(s, xml, it['bundle_uuid'], name)
 
         processed += 1
         print(f"[OK] {item_uuid} → XML uploaded")

@@ -6,7 +6,7 @@ with open("config.yml", "r") as f:
     config = yaml.safe_load(f)
 
 # Decide environment dynamically
-env = os.getenv("RENATE_ENV", "test")
+env = os.getenv("RENATE_ENV", "production")
 
 cfg = config[env]
 
@@ -21,4 +21,5 @@ CONFIG = SimpleNamespace(
     ITEMS_ENDPOINT=f"{cfg['base_url']}{cfg['endpoints']['items']}",
     UPDATE_ITEMS_METADATA=f"{cfg['base_url']}{cfg['endpoints']['update_item_metadata']}",
     LOGIN_ENDPOINT=f"{cfg['base_url']}{cfg['endpoints']['login']}",
+    GROBID_API_URL=f"{cfg['endpoints']['GROBID_URL']}",
 )

@@ -20,7 +20,6 @@ NO_SPACE_BEFORE = {".", ",", ":", ";", "!", "?", "%", ")", "]", "}", "’", "”
 NO_SPACE_AFTER = {"(", "[", "{", "£", "$", "€", "“"}
 GLUE_TOKENS = {"-", "–", "—", "/"}  # attach without surrounding spaces
 
-# >>> Fill these with your own terms (examples included)
 LTP_KEYWORDS = [
     "low temperature plasma",
     "cold plasma",
@@ -66,7 +65,6 @@ EXCLUSIONS = [
 
 def _word_boundary_pattern(term: str) -> re.Pattern:
     words = term.strip().split()
-    # \b around each alnum chunk; allow hyphens inside words
     parts = [r"\b" + re.escape(w).replace(r"\-", r"[\-–]") + r"\b" for w in words]
     pat = r"\s+".join(parts)
     return re.compile(pat, flags=re.IGNORECASE)
@@ -81,13 +79,9 @@ def clean_keyword(s: str) -> str:
     if s is None:
         return ""
 
-    # strip quotes/spaces
+    
     s = str(s).strip().strip("'").strip('"')
-
-    # remove punctuation/brackets (turn into spaces so words don't merge)
     s = re.sub(r"[^\w\s]", " ", s)
-
-    # normalize whitespace + lowercase
     s = re.sub(r"\s+", " ", s).strip().lower()
 
     return s
@@ -102,13 +96,9 @@ def clean_keyword_objects(keyword_list):
 
 def clean_and_split_text(text):
     """Cleans text by removing unwanted characters and splits into sentences."""
-    # Remove specific unwanted characters
+
     text = text.replace("\n", " ")  # Replace newlines with space to avoid joining words
-
-    # Split text into sentences by '.'
     sentences = text.split(".")
-
-    # Strip whitespace from each sentence
     cleaned_sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
 
     return cleaned_sentences
@@ -141,7 +131,6 @@ def update_entities_inplace(
 
         sent["entities"] = new_ents
 
-        # drop sentence if no entities remain
         if not new_ents:
             sentences.pop(i)
 
@@ -152,12 +141,10 @@ def _norm_keywords(meta_keywords: Union[str, Iterable[str], None]) -> str:
     if meta_keywords is None:
         return ""
     if isinstance(meta_keywords, str):
-        # Split on ; or , if it looks like a single string
         if ";" in meta_keywords or "," in meta_keywords:
             toks = [k.strip() for k in re.split(r"[;,]", meta_keywords)]
             return " ".join(toks)
         return meta_keywords
-    # Iterable (list/tuple/set)
     try:
         return " ".join([str(x) for x in meta_keywords])
     except TypeError:
@@ -179,7 +166,6 @@ def label_ltp(
         {term for term, pat in zip(EXCLUSIONS, _NEG_PATS) if pat.search(text)}
     )
 
-    # simple decision rule: at least 1 positive AND no exclusions
     is_ltp = (len(pos_hits) > 0) and (len(neg_hits) == 0)
 
     return is_ltp
@@ -246,6 +232,7 @@ def nfc(s):
     return unicodedata.normalize("NFC", s)
 
 
+'''
 def detok_with_offsets(tokens):
     """
     Returns (text, spans) where spans[i] = (start,end) char offsets of tokens[i]
@@ -281,11 +268,9 @@ def detok_with_offsets(tokens):
 
     text = "".join(text_parts)
     return nfc(text), spans  # normalize for stability
+'''
 
-
-# ---------------- BIO → spans per type ----------------
-
-
+'''
 def bio_to_spans(
     labels, token_spans, raw_text, entity_type, confidences=None, agg="min"
 ):
@@ -325,7 +310,7 @@ def bio_to_spans(
         else:
             i += 1
     return out
-
+'''
 
 # ---------------- Build PPAnn XML ----------------
 PP = "https://example.org/ppann/1.0"
@@ -411,8 +396,7 @@ def sec_to_dict(sec):
         "subsections": children,
     }
 
-
-# --- Main parser -------------------------------------------------------------
+'''
 def _t(el):
     return "" if el is None else "".join(el.itertext())
 
@@ -429,7 +413,7 @@ def read_jats_xml(file_path):
     print("abstract", art["abstract"][0])
     # print('sections', art['sections'])
     annotate_class_wise_text(art["abstract"][0])
-
+'''
 
 def create_and_add_annotations(s, collection_id):
     items = get_collection_items_by_handle(collection_id, None)

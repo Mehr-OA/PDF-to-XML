@@ -4,10 +4,9 @@ from AuthService import get_authenticated_session
 
 
 s = get_authenticated_session()
-#add_xmls_in_renate(s, "10d7aac1-a01e-43f7-be42-8280f16160c5")
-
-add_xmls_in_renate(s, "477883a2-8ca5-462e-b496-8a18f4500958") #production
+add_xmls_in_renate(s, "477883a2-8ca5-462e-b496-8a18f4500958")
 
 
-#considering only physics collection
-#create_and_add_annotations(s, "10d7aac1-a01e-43f7-be42-8280f16160c5")
+# considering only physics collection
+print("Genetating annotations of physics articles using ML model")
+create_and_add_annotations(s, "477883a2-8ca5-462e-b496-8a18f4500958")

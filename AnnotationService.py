@@ -19,7 +19,7 @@ from inference import generate_annotations
 NO_SPACE_BEFORE = {".", ",", ":", ";", "!", "?", "%", ")", "]", "}", "’", "”"}
 NO_SPACE_AFTER = {"(", "[", "{", "£", "$", "€", "“"}
 GLUE_TOKENS = {"-", "–", "—", "/"}  # attach without surrounding spaces
-
+# dc.subject.plasma/LTP
 LTP_KEYWORDS = [
     "low temperature plasma",
     "cold plasma",
@@ -79,7 +79,6 @@ def clean_keyword(s: str) -> str:
     if s is None:
         return ""
 
-    
     s = str(s).strip().strip("'").strip('"')
     s = re.sub(r"[^\w\s]", " ", s)
     s = re.sub(r"\s+", " ", s).strip().lower()
@@ -396,7 +395,8 @@ def sec_to_dict(sec):
         "subsections": children,
     }
 
-'''
+
+"""
 def _t(el):
     return "" if el is None else "".join(el.itertext())
 
@@ -413,32 +413,35 @@ def read_jats_xml(file_path):
     print("abstract", art["abstract"][0])
     # print('sections', art['sections'])
     annotate_class_wise_text(art["abstract"][0])
-'''
+"""
+
 
 def create_and_add_annotations(s, collection_id):
     items = get_collection_items_by_handle(collection_id, None)
-    for it in items[2:3]:
+    print("Generating annotations")
+    for it in items[:3]:
         # print('item', it)
         item_uuid = it["uuid"]
         bundle_uuid = it["bundle_uuid"]
         name = it["name"]
+        print(f"Processing item {name}")
         # get metadata here
         keywords = it["keywords"]
         xml_url = it["xml_content"]["content"]
         article = parse_jats_xml(xml_url)
-        print(article)
+        #print(article)
 
         title = article["title"]
         abstract = article["abstract"]
         sections = article["sections"]
         # print('title', title)
-        print(sections)
+        #print(sections)
         if len(title) != 0 and len(abstract) != 0:
             ltp = label_ltp(title, abstract[0], keywords)
-            print(ltp)
+            #print(ltp)
         else:
             continue
-        print("----------")
+        # print("----------")
         ltp = True  # remove it
         threshold_entities = []
         text_parts = []
@@ -490,31 +493,26 @@ def create_and_add_annotations(s, collection_id):
                 and e["type"] != "G#Unit"
                 and len(text.split()) > 1
             ):
-                print(f"[{text}] {e['type']} (score={e['confidence']:.3f})")
+                #print(f"[{text}] {e['type']} (score={e['confidence']:.3f})")
                 threshold_entities.append(text)
 
             # remove duplicates
             threshold_entities = list(set(threshold_entities))
-        print(len(threshold_entities))
 
         # print(merged_keywords)
         payload = [
             {"op": "add", "path": "/metadata/dc.subject", "value": {"value": entity}}
-            for entity in threshold_entities
+            for entity in threshold_entities[:20]
         ]
-        # updated_item_metadata(item_uuid, payload, s)
-        # for key, value in results.items():
-        # if key.startswith("Label_"):
-        # label_name = value
-        # label_key = key.split("Label_")[1]
-        # score_key = f"Score_{label_key}"
-        # score = results.get(score_key)
-        # print(f"{label_name}: {score}")
+        updated_item_metadata(item_uuid, payload, s)
+       
 
         # pass entities
-        print(it["doi"])
-        print(it["renate_doi"])
-        xml = build_ppann_xml(updated_entities, updated_sentences, it["doi"], it["renate_doi"], title)
+        # print(it["doi"])
+        # print(it["renate_doi"])
+        xml = build_ppann_xml(
+            updated_entities, updated_sentences, it["doi"], it["renate_doi"], name
+        )
 
         # retrieve_high_quality_annotations(results)
         name = name.split(".")[0] + "-annotations"

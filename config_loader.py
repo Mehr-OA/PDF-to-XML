@@ -1,12 +1,11 @@
 import yaml, os
 from types import SimpleNamespace
 
-# Load YAML once
 with open("config.yml", "r") as f:
     config = yaml.safe_load(f)
 
 # Decide environment dynamically
-env = os.getenv("RENATE_ENV", "production")
+env = os.getenv("RENATE_ENV", "test")
 
 cfg = config[env]
 

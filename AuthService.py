@@ -8,6 +8,7 @@ def get_authenticated_session():
 
     try:
         # Get XSRF cookie
+        print("Logging in")
         response = session.get(CONFIG.BASE_URL)
         response.raise_for_status()
 

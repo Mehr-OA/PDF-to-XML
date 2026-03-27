@@ -419,8 +419,9 @@ def read_jats_xml(file_path):
 def create_and_add_annotations(s, collection_id):
     items = get_collection_items_by_handle(collection_id, None)
     print("Generating annotations")
-    for it in items[:3]:
+    for it in items[:1]:
         # print('item', it)
+        print(it)
         item_uuid = it["uuid"]
         bundle_uuid = it["bundle_uuid"]
         name = it["name"]
@@ -429,16 +430,16 @@ def create_and_add_annotations(s, collection_id):
         keywords = it["keywords"]
         xml_url = it["xml_content"]["content"]
         article = parse_jats_xml(xml_url)
-        #print(article)
+        # print(article)
 
         title = article["title"]
         abstract = article["abstract"]
         sections = article["sections"]
         # print('title', title)
-        #print(sections)
+        # print(sections)
         if len(title) != 0 and len(abstract) != 0:
             ltp = label_ltp(title, abstract[0], keywords)
-            #print(ltp)
+            # print(ltp)
         else:
             continue
         # print("----------")
@@ -491,21 +492,20 @@ def create_and_add_annotations(s, collection_id):
                 text not in keywords
                 and e["confidence"] > 0.95
                 and e["type"] != "G#Unit"
-                and len(text.split()) > 1
+                and len(text.split()) > 2
             ):
-                #print(f"[{text}] {e['type']} (score={e['confidence']:.3f})")
+                # print(f"[{text}] {e['type']} (score={e['confidence']:.3f})")
                 threshold_entities.append(text)
 
             # remove duplicates
-            threshold_entities = list(set(threshold_entities))
-
+            threshold_entities = list(set(threshold_entities))[:20]
+            threshold_entities.append("Low Temperature Plasma")
         # print(merged_keywords)
         payload = [
-            {"op": "add", "path": "/metadata/dc.subject", "value": {"value": entity}}
-            for entity in threshold_entities[:20]
+            {"op": "add", "path": "/metadata/tib.subject.mehr-oa", "value": {"value": entity}}
+            for entity in threshold_entities
         ]
         updated_item_metadata(item_uuid, payload, s)
-       
 
         # pass entities
         # print(it["doi"])

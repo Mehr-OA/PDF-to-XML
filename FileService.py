@@ -61,13 +61,13 @@ def save_last_run(collection_id):
     )
 
 
-def pdf_to_xml(pdf_url):
+def pdf_to_xml(pdf_url, name, doi, renate_doi, license):
     pdf_file = download_item_content(pdf_url)
     pdf_file_content = {"input": ("file.pdf", BytesIO(pdf_file), "application/pdf")}
     response = requests.post(GROBID_API_URL, files=pdf_file_content)
     if response.status_code == 200:
         xml_tree = etree.fromstring(response.content)
-        xml = convert_tei_to_jats(xml_tree)
+        xml = convert_tei_to_jats(xml_tree, name, doi, renate_doi, license)
         return xml
 
 
@@ -176,23 +176,27 @@ def extract_paper_content(tree, ns):
     return sections
 
 
-def convert_tei_to_jats(tei_xml):
-    # with open(tei_xml_path, 'rb') as file:
-    # tei_xml = etree.XML(file.read())
-
+def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
     with open("teixml.xml", "rb") as file:
         xslt = etree.XSLT(etree.XML(file.read()))
 
-    jats_xml = xslt(tei_xml)
+    print(name, doi, renate_doi, license)
+    try:
+        jats_xml = xslt(
+            tei_xml,
+            title=etree.XSLT.strparam(name),
+            dc_identifier_uri=etree.XSLT.strparam(doi),
+            dc_identifier_renate=etree.XSLT.strparam(renate_doi),
+            dc_rights_license=etree.XSLT.strparam(license),
+            xml_created=etree.XSLT.strparam(datetime.today().strftime("%d-%m-%Y"))
+        )
+        return etree.tostring(jats_xml, pretty_print=True)
 
-    return etree.tostring(jats_xml, pretty_print=True)
-
-
-# def get_all_collections():
-# response = requests.get(CONFIG.COLLECTIONS_ENDPOINT)
-# response.raise_for_status()  # Raise an error for bad status codes
-# collections = response.json()['_embedded']['collections']
-# return collections
+    except etree.XSLTApplyError as e:
+        print("XSLTApplyError:", e)
+        print("---- XSLT error log ----")
+        print(xslt.error_log)
+        raise
 
 
 def get_items_for_collection(collection_id, since=None):
@@ -287,7 +291,7 @@ def get_item_information(item_id):
     return item_info
 
 
-def get_item_content(item_id, bundle_links):
+def get_item_content(bundle_links):
     item_content = requests.get(bundle_links).json()
     bitstream_url = ""
     bundle_uuid = ""
@@ -299,7 +303,6 @@ def get_item_content(item_id, bundle_links):
             # break
 
     item_content = requests.get(bitstream_url).json()
-    # print(item_content)
     r = pick_pdf_and_xml(item_content)
     item_name = item_content["_embedded"]["bitstreams"][0]["name"]
     return {"name": item_name, "bundle_uuid": bundle_uuid, "content": r}
@@ -314,9 +317,6 @@ def download_item_content(pdf_url):
 
 
 def upload_xml_to_renate(s, xml, bundle_uuid, name):
-    file_path = name + ".xml"
-    cookie_value = s.headers["X-XSRF-TOKEN"]
-    cookies = {"DSPACE-XSRF-COOKIE": cookie_value}
     files = {"file": (f"{name}.xml", BytesIO(xml), "application/json")}
 
     url = CONFIG.UPLOAD_BITSTREAMS_ENDPOINT.format(bundle_uuid=bundle_uuid)
@@ -329,29 +329,33 @@ def upload_xml_to_renate(s, xml, bundle_uuid, name):
 
 def get_collection_items_by_handle(collection_id: str, since: None):
     items = get_items_for_collection(collection_id, since)
-
+    # remove this code
+    item_s = []
+    for item in items:
+        if item["uuid"] == "d81476a5-146e-4edd-97f0-124edc83a9ac":
+            item_s = item
+    print('item')
+    print(item_s)
+    items = [item_s]
+    # remove till here
     results = []
     print("Retreiving papers metadata...")
 
-    for item in tqdm(items[:3], desc="PDFs to XML"):
+    for item in tqdm(items, desc="PDFs to XML"):
         metadata = item["metadata"]
         subjects = [x["value"] for x in metadata.get("dc.subject", [])]
-        doi = [
-                x["value"]
-                for x in metadata.get("dc.relation.doi", [])
-                ]
+        doi = [x["value"] for x in metadata.get("dc.relation.doi", [])]
         renate_doi = [
-                x["value"]
-                for x in metadata.get("'dc.identifier.uri", [])
-                if "doi.org/10." in x["value"]
-            ]
-        
-        item_uuid = item["uuid"]
-        name = item["name"]
+            x["value"]
+            for x in metadata.get("dc.identifier.uri", [])
+            if "doi.org/10." in x["value"]
+        ]
+
+        license = metadata.get("dc.rights.license", [])
         bundles_url = item["_links"]["bundles"]["href"]
 
-        info = get_item_content(item_uuid, bundles_url)
-        pdf = info.get("content", {}).get("pdf")
+        item_content = get_item_content(bundles_url)
+        pdf = item_content.get("content", {}).get("pdf")
 
         if not pdf:
             continue
@@ -359,15 +363,17 @@ def get_collection_items_by_handle(collection_id: str, since: None):
         # print(info)
         results.append(
             {
-                "uuid": item_uuid,
-                "name": info["name"],
+                "uuid": item["uuid"],
+                "title": item["name"],
+                "name":  item_content["name"],
                 "doi": doi[0] if len(doi) > 0 else "",
+                "license": license[0]["value"] if len(license) > 0 else "",
                 "renate_doi": renate_doi[0] if len(renate_doi) > 0 else "",
                 "keywords": subjects,
                 "bundles_url": bundles_url,
-                "pdf_content": info["content"]["pdf"],
-                "xml_content": info["content"]["xml"],
-                "bundle_uuid": info["bundle_uuid"],
+                "pdf_content": item_content["content"]["pdf"],
+                "xml_content": item_content["content"]["xml"],
+                "bundle_uuid": item_content["bundle_uuid"],
             }
         )
 
@@ -385,16 +391,15 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int =
     items = get_collection_items_by_handle(collection_id, since=last_run)
 
     processed = 0
-    for it in tqdm(items[:3], desc="PDFs to XML"):
+    for it in tqdm(items[:1], desc="PDFs to XML"):
         item_uuid = it["uuid"]
         name = it["name"]
         name = name.split(".")[0] + "-jats"
         pdf_url = it["pdf_content"]["content"]
 
-        xml = pdf_to_xml(pdf_url)
+        xml = pdf_to_xml(pdf_url, it["title"], it["doi"], it["renate_doi"], it["license"])
 
-        upload_xml_to_renate(s, xml, it['bundle_uuid'], name)
-        # statement about the creation at TIB
+        upload_xml_to_renate(s, xml, it["bundle_uuid"], name)
         processed += 1
         print(f"[OK] {item_uuid} → XML uploaded")
 

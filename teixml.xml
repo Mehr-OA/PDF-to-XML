@@ -10,11 +10,78 @@
     <!-- Root template for the TEI document -->
     <xsl:template match="/tei:TEI">
         <jats:article article-type="research-article">
+            <jats:notes notes-type="processing">
+                        <jats:sec xml:lang="en">
+                        <jats:title>XML Generation Notice</jats:title>
+                        <jats:p>
+                            This is an automatically generated XML version of the publication: 
+                            "<xsl:value-of select="$title"/> - <xsl:value-of select="$dc_identifier_renate"/>", originally published under the license 
+                            <xsl:value-of select="$dc_rights_license"/>. 
+                            The XML version was generated on 
+                            <xsl:value-of select="$xml_created"/> 
+                            by Technische Informationsbibliothek (TIB). 
+                            In spite of high standards in the development of the script, we cannot outrule the possibility of mistakes in the process of file conversion. 
+                            The authors are not responsible for possibly existing mistakes or differences in this XML-version. 
+                            The link above directs you to the authorised version of the publication. 
+                            If you spot mistakes in the XML-version, please contact us at oarepository@tib.eu. 
+                            This XML-Version of the publication "<xsl:value-of select="$title"/> - <xsl:value-of select="$dc_identifier_renate"/>" is provided "as is", without any guarantee (“ausdrücklich oder stillschweigend”). 
+                            TIB does not take responsibility for potential mistakes, missing passages and consequences resulting from this use.
+                        </jats:p>
+                        </jats:sec>
+
+                        <jats:sec xml:lang="de">
+                        <jats:title>Hinweis zur XML-Generierung</jats:title>
+                        <jats:p>
+                            Dies ist eine durch die Technische Informationsbibliothek – TIB am <xsl:value-of select="$xml_created"/> automatisiert erstellte XML-Version der
+                            Publikation "<xsl:value-of select="$title"/> - <xsl:value-of select="$dc_identifier_renate"/>",
+                            die unter der Lizenz <xsl:value-of select="$dc_rights_license"/> veröffentlicht wurde.
+                            Trotz sorgfältiger Entwicklung des Skripts können Fehler im Konvertierungsprozess nicht ausgeschlossen werden.
+                            Die Autor*innen der Originalpublikation sind für etwaige Fehler/Differenzen in der XML-Version nicht verantwortlich.
+                            Die oben verlinkte Datei stellt die autoritative Version der Publikation dar.
+                            Hinweise auf Fehler on der XML-Version nehmen wir unter oarepository@tib.eu gern entgegen.
+                            Die vorliegende XML-Version der Publikation "<xsl:value-of select="$dc_identifier_uri"/>" wird "wie es ist" bereitgestellt,
+                            ohne jegliche Gewährleistung oder Garantie, sei es ausdrücklich oder stillschweigend.
+                            Die TIB übernimmt keine Verantwortung für etwaige Fehler, Auslassungen oder Folgen, die aus der
+                            Nutzung dieser Datei resultieren.
+                        </jats:p>
+                        </jats:sec> 
+                    </jats:notes>
             <jats:front>
                 <jats:journal-meta>
                     <!-- Placeholder for journal metadata if available -->
                 </jats:journal-meta>
                 <jats:article-meta>
+                    <jats:custom-meta-group>
+                        <jats:custom-meta>
+                            <jats:meta-name>xml_created</jats:meta-name>
+                            <jats:meta-value>
+                                <xsl:value-of select="$xml_created"/>
+                            </jats:meta-value>
+
+                        </jats:custom-meta>
+
+                        <jats:custom-meta>
+                            <jats:meta-name>dc.identifier.uri</jats:meta-name>
+                            <jats:meta-value>
+                                <xsl:value-of select="$dc_identifier_uri"/>
+                                </jats:meta-value>
+                        </jats:custom-meta>
+
+                        <jats:custom-meta>
+                        <jats:meta-name>dc.rights.license</jats:meta-name>
+                            <jats:meta-value>
+                            <xsl:value-of select="$dc_rights_license"/>
+                        </jats:meta-value>
+                        </jats:custom-meta>
+
+                        <jats:custom-meta>
+                            <jats:meta-name>dc.relation.doi</jats:meta-name>
+                            <jats:meta-value>
+                            <xsl:value-of select="$dc_identifier_renate"/>
+                            </jats:meta-value>
+                        </jats:custom-meta>
+
+                </jats:custom-meta-group>
                     <xsl:apply-templates select="tei:teiHeader/tei:fileDesc"/>
                 </jats:article-meta>
             </jats:front>
@@ -25,12 +92,12 @@
     </xsl:template>
 
     <xsl:template match="tei:profileDesc/tei:abstract">
-        <jats:abstract>
-            <xsl:for-each select="tei:p">
-                <jats:p><xsl:value-of select="."/></jats:p>
-            </xsl:for-each>
-        </jats:abstract>
-    </xsl:template>
+		<jats:abstract>
+			<xsl:for-each select=".//tei:p">
+				<jats:p><xsl:value-of select="."/></jats:p>
+			</xsl:for-each>
+		</jats:abstract>
+	</xsl:template>
 
     <!-- Template for title and publication date -->
     <xsl:template match="tei:fileDesc">

@@ -502,7 +502,7 @@ def create_and_add_annotations(s, collection_id):
         updated_item_metadata(item_uuid, payload, s)
 
         xml = build_ppann_xml(
-            updated_entities, updated_sentences, it["doi"], it["renate_doi"], name
+            updated_entities, updated_sentences, it["doi"], it["renate_doi"], it["title"]
         )
 
         # retrieve_high_quality_annotations(results)

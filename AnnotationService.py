@@ -417,7 +417,7 @@ def read_jats_xml(file_path):
 
 
 def create_and_add_annotations(s, collection_id):
-    items = get_collection_items_by_handle(collection_id, None)
+    items = get_collection_items_by_handle(collection_id)
     print("Generating annotations")
     for it in items[:1]:
         # print('item', it)
@@ -428,21 +428,24 @@ def create_and_add_annotations(s, collection_id):
         print(f"Processing item {name}")
         # get metadata here
         keywords = it["keywords"]
-        xml_url = it["xml_content"]["content"]
+        xml_url = it["jats_xml_content"]["content"]
+        existing_annotations = it["annotation_xml_content"]
+        if existing_annotations:
+            print(f"[SKIP] {item_uuid} → Annotations already exists")
+            continue
+
         article = parse_jats_xml(xml_url)
-        # print(article)
 
         title = article["title"]
         abstract = article["abstract"]
         sections = article["sections"]
-        # print('title', title)
-        # print(sections)
+        
         if len(title) != 0 and len(abstract) != 0:
             ltp = label_ltp(title, abstract[0], keywords)
-            # print(ltp)
+            
         else:
             continue
-        # print("----------")
+        
         ltp = True  # remove it
         threshold_entities = []
         text_parts = []
@@ -475,15 +478,6 @@ def create_and_add_annotations(s, collection_id):
         sentences = response.get("sentences", [])
         updated_sentences = update_entities_inplace(sentences, clean_keyword)
         updated_entities = clean_keyword_objects(entities)
-        # per_token = best_label_per_token(results)
-
-        # Example: print token → (class, tag, score)
-        # for t in per_token:
-        # print(f"{t['token']:<15} {t['class'] or 'O':<22} {t['tag']:<18} {t['score']:.3f}")
-
-        # Collapse BIO into entity spans
-
-        # entities = bio_spans(per_token)
 
         for e in updated_entities:
             text = e["text"].strip().lower()
@@ -494,7 +488,7 @@ def create_and_add_annotations(s, collection_id):
                 and e["type"] != "G#Unit"
                 and len(text.split()) > 2
             ):
-                # print(f"[{text}] {e['type']} (score={e['confidence']:.3f})")
+                
                 threshold_entities.append(text)
 
             # remove duplicates
@@ -507,9 +501,6 @@ def create_and_add_annotations(s, collection_id):
         ]
         updated_item_metadata(item_uuid, payload, s)
 
-        # pass entities
-        # print(it["doi"])
-        # print(it["renate_doi"])
         xml = build_ppann_xml(
             updated_entities, updated_sentences, it["doi"], it["renate_doi"], name
         )

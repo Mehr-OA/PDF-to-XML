@@ -6,59 +6,15 @@ from lxml.builder import E
 import re
 import requests
 import os.path
-
-# load_dotenv()
-import os
-
-# import yaml
-from urllib.parse import urljoin
-import json
-from datetime import datetime, timezone
-from urllib.parse import quote
-
-# Load config.yml once
-from config_loader import CONFIG
+from datetime import datetime
 from io import BytesIO
 from tqdm import tqdm
+
+from config_loader import CONFIG
 
 
 directory = "paper-pdfs"
 GROBID_API_URL = CONFIG.GROBID_API_URL
-
-CURSOR_FILE = "last_run.json"
-
-
-def load_last_run(collection_id):
-    """Return last run timestamp for a collection, or None if not found."""
-    if not os.path.exists(CURSOR_FILE):
-        return None
-
-    with open(CURSOR_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    if collection_id in data:
-        return data[collection_id].get("last_run")
-    return None
-
-
-def save_last_run(collection_id):
-    """Save last run timestamp for a given collection."""
-    # Load previous runs if the file exists
-    file_data = {}
-    if os.path.exists(CURSOR_FILE):
-        with open(CURSOR_FILE, "r", encoding="utf-8") as f:
-            file_data = json.load(f)
-
-    # Update this collection's timestamp
-    file_data[collection_id] = {"last_run": datetime.now(timezone.utc).isoformat()}
-
-    # Save all runs back to file
-    with open(CURSOR_FILE, "w", encoding="utf-8") as f:
-        json.dump(file_data, f, indent=2)
-
-    print(
-        f"[INFO] Saved last run for {collection_id}: {file_data[collection_id]['last_run']}"
-    )
 
 
 def pdf_to_xml(pdf_url, name, doi, renate_doi, license):
@@ -86,7 +42,6 @@ def pdf_to_txt():
                 files = {"input": file}
                 response = requests.post(GROBID_API_URL, files=files)
                 if response.status_code == 200:
-                    print(True)
                     xml_tree = etree.fromstring(response.content)
                     ns = {"tei": "http://www.tei-c.org/ns/1.0"}
                     paper_content = extract_paper_content(xml_tree, ns)
@@ -180,7 +135,6 @@ def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
     with open("teixml.xml", "rb") as file:
         xslt = etree.XSLT(etree.XML(file.read()))
 
-    print(name, doi, renate_doi, license)
     try:
         jats_xml = xslt(
             tei_xml,
@@ -199,7 +153,7 @@ def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
         raise
 
 
-def get_items_for_collection(collection_id, since=None):
+def get_items_for_collection(collection_id):
     print(f"Retrieving items from a collection {collection_id}")
 
     items = []
@@ -226,13 +180,6 @@ def get_items_for_collection(collection_id, since=None):
             item_obj = (item.get("_embedded") or {}).get("indexableObject") or {}
             if not item_obj:
                 continue
-
-            if since:
-                lm = item_obj.get("lastModified")
-                if not lm:
-                    continue
-                if lm < since:
-                    continue
 
             items.append(item_obj)
 
@@ -262,26 +209,38 @@ def pick_pdf_and_xml(bitstreams_json):
         None,
     )
 
-    xmls = [b for b in bits if b.get("name", "").lower().endswith(".xml")]
+    jats_xml = next(
+        (
+            b
+            for b in bits
+            if b.get("name", "").lower().endswith("-jats.xml")
+        ),
+        None,
+    )
 
-    def xml_priority(name: str) -> int:
-        n = name.lower()
-        if n.endswith(".xml"):
-            return 2
-        return 1
-
-    xml = max(
-        xmls,
-        key=lambda b: (xml_priority(b.get("name", "")), b.get("sequenceId", 0)),
-        default=None,
+    annotation_xml = next(
+        (
+            b
+            for b in bits
+            if b.get("name", "").lower().endswith("-annotations.xml")
+        ),
+        None,
     )
 
     def create_object(b):
         if not b:
             return None
-        return {"uuid": b.get("uuid"), "name": b.get("name"), "content": content_of(b)}
+        return {
+            "uuid": b.get("uuid"),
+            "name": b.get("name"),
+            "content": content_of(b),
+        }
 
-    return {"pdf": create_object(pdf), "xml": create_object(xml)}
+    return {
+        "pdf": create_object(pdf),
+        "jats_xml": create_object(jats_xml),
+        "annotation_xml": create_object(annotation_xml),
+    }
 
 
 def get_item_information(item_id):
@@ -306,8 +265,6 @@ def get_item_content(bundle_links):
     r = pick_pdf_and_xml(item_content)
     item_name = item_content["_embedded"]["bitstreams"][0]["name"]
     return {"name": item_name, "bundle_uuid": bundle_uuid, "content": r}
-    # content_url = item_content['_embedded']['bitstreams'][0]['_links']['content']['href']
-    # return {'name': item_name, 'bundle_uuid': bundle_uuid, 'content': content_url}
 
 
 def download_item_content(pdf_url):
@@ -327,15 +284,14 @@ def upload_xml_to_renate(s, xml, bundle_uuid, name):
         print("File upload failed", upload_response.text)
 
 
-def get_collection_items_by_handle(collection_id: str, since: None):
-    items = get_items_for_collection(collection_id, since)
+def get_collection_items_by_handle(collection_id: str):
+    items = get_items_for_collection(collection_id)
     # remove this code
     item_s = []
     for item in items:
         if item["uuid"] == "d81476a5-146e-4edd-97f0-124edc83a9ac":
             item_s = item
     print('item')
-    print(item_s)
     items = [item_s]
     # remove till here
     results = []
@@ -360,7 +316,6 @@ def get_collection_items_by_handle(collection_id: str, since: None):
         if not pdf:
             continue
 
-        # print(info)
         results.append(
             {
                 "uuid": item["uuid"],
@@ -372,7 +327,8 @@ def get_collection_items_by_handle(collection_id: str, since: None):
                 "keywords": subjects,
                 "bundles_url": bundles_url,
                 "pdf_content": item_content["content"]["pdf"],
-                "xml_content": item_content["content"]["xml"],
+                "jats_xml_content": item_content["content"]["jats_xml"],
+                "annotation_xml_content": item_content["content"]["annotation_xml"],
                 "bundle_uuid": item_content["bundle_uuid"],
             }
         )
@@ -381,14 +337,8 @@ def get_collection_items_by_handle(collection_id: str, since: None):
     return results
 
 
-def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int = 100):
-    last_run = load_last_run(collection_id)
-    if last_run:
-        print(f"Last run for {collection_id}: {last_run}")
-    else:
-        print(f"No previous run found for {collection_id}")
-
-    items = get_collection_items_by_handle(collection_id, since=last_run)
+def add_xmls_in_renate(s: requests.Session, collection_id: str):
+    items = get_collection_items_by_handle(collection_id)
 
     processed = 0
     for it in tqdm(items[:1], desc="PDFs to XML"):
@@ -396,6 +346,11 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int =
         name = it["name"]
         name = name.split(".")[0] + "-jats"
         pdf_url = it["pdf_content"]["content"]
+        print(it["jats_xml_content"])
+        existing_jats = it["jats_xml_content"]
+        if existing_jats:
+            print(f"[SKIP] {item_uuid} → JATS already exists")
+            continue
 
         xml = pdf_to_xml(pdf_url, it["title"], it["doi"], it["renate_doi"], it["license"])
 
@@ -403,5 +358,4 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str, page_size: int =
         processed += 1
         print(f"[OK] {item_uuid} → XML uploaded")
 
-    save_last_run(collection_id)
     print(f"[INFO] Done. Uploaded XML for {processed}/{len(items)} items.")

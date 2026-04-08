@@ -12,8 +12,6 @@ from tqdm import tqdm
 
 from config_loader import CONFIG
 
-
-directory = "paper-pdfs"
 GROBID_API_URL = CONFIG.GROBID_API_URL
 
 
@@ -27,110 +25,6 @@ def pdf_to_xml(pdf_url, name, doi, renate_doi, license):
         return xml
 
 
-def pdf_to_txt():
-    for filename in os.listdir(directory):
-        if filename.endswith(".pdf"):
-            file_path = os.path.join(directory, filename)
-            # print(file_path)
-            output_file_path = os.path.join(
-                "textfiles", os.path.splitext(filename)[0] + ".txt"
-            )
-            with open(file_path, "rb") as file, open(
-                output_file_path, "w", encoding="utf-8"
-            ) as output_file:
-                # print(file)
-                files = {"input": file}
-                response = requests.post(GROBID_API_URL, files=files)
-                if response.status_code == 200:
-                    xml_tree = etree.fromstring(response.content)
-                    ns = {"tei": "http://www.tei-c.org/ns/1.0"}
-                    paper_content = extract_paper_content(xml_tree, ns)
-                    paper_metadata = extract_paper_metadata(xml_tree, ns)
-
-                    textcontent = ""
-                    textcontent = textcontent + "Abstract\n"
-                    textcontent = textcontent + paper_metadata["abstract"] + "\n\n"
-                    for title, content in paper_content.items():
-                        textcontent = textcontent + title + "\n"
-                        textcontent = textcontent + content + "\n\n"
-                    output_file.write(textcontent)
-
-    return ""
-
-
-def extract_paper_metadata(tree, namespaces):
-    details = {}
-    # Extracting paper title
-    title_elem = tree.find('.//tei:title[@type="main"]', namespaces)
-    details["title"] = title_elem.text if title_elem is not None else "Not available"
-
-    # Extracting authors
-    authors = []
-    for author_elem in tree.findall(".//tei:teiHeader//tei:author", namespaces):
-        author = {}
-        pers_name = author_elem.find(".//tei:persName", namespaces)
-        if pers_name is not None:
-            author["name"] = (
-                pers_name.findtext(
-                    ".//tei:forename", namespaces=namespaces, default="Not available"
-                )
-                + " "
-                + pers_name.findtext(
-                    ".//tei:surname", namespaces=namespaces, default="Not available"
-                )
-            )
-        author["orcid"] = author_elem.findtext(
-            './/tei:idno[@type="orcid"]', namespaces=namespaces, default="Not available"
-        )
-        author["affiliation"] = author_elem.findtext(
-            ".//tei:affiliation/tei:orgName",
-            namespaces=namespaces,
-            default="Not available",
-        )
-        authors.append(author)
-    details["authors"] = authors
-
-    abstract_elem = tree.find(".//tei:abstract", namespaces)
-    abstract_text = (
-        etree.tostring(abstract_elem, method="text", encoding="unicode").strip()
-        if abstract_elem is not None
-        else "Not available"
-    )
-    details["abstract"] = abstract_text
-    # Extracting DOI
-    details["doi"] = tree.findtext(
-        './/tei:idno[@type="DOI"]', namespaces=namespaces, default="Not available"
-    )
-
-    # Extracting date published
-    publication_date = tree.findtext(
-        './/tei:date[@type="published"]', namespaces=namespaces, default="Not available"
-    )
-    # Removing any non-date characters
-    details["date_published"] = re.sub("[^0-9-]", "", publication_date)
-    return details
-
-
-def extract_paper_content(tree, ns):
-    sections = {}
-    # Iterate over each head tag in the body
-    for head in tree.xpath("//tei:body/tei:div/tei:head", namespaces=ns):
-        heading = head.text.strip() if head.text else "Unnamed Section"
-        content = []
-
-        # Find all the subsequent p tags until the next head tag
-        for sibling in head.itersiblings():
-            if sibling.tag == "{http://www.tei-c.org/ns/1.0}p":
-                paragraph = sibling.xpath("string(.)", namespaces=ns).strip()
-                content.append(paragraph)
-            elif sibling.tag == "{http://www.tei-c.org/ns/1.0}head":
-                break
-
-        sections[heading] = "\n".join(content)
-
-    return sections
-
-
 def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
     with open("teixml.xml", "rb") as file:
         xslt = etree.XSLT(etree.XML(file.read()))
@@ -142,7 +36,7 @@ def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
             dc_identifier_uri=etree.XSLT.strparam(doi),
             dc_identifier_renate=etree.XSLT.strparam(renate_doi),
             dc_rights_license=etree.XSLT.strparam(license),
-            xml_created=etree.XSLT.strparam(datetime.today().strftime("%d-%m-%Y"))
+            xml_created=etree.XSLT.strparam(datetime.today().strftime("%d-%m-%Y")),
         )
         return etree.tostring(jats_xml, pretty_print=True)
 
@@ -182,8 +76,7 @@ def get_items_for_collection(collection_id):
                 continue
 
             items.append(item_obj)
-
-            pbar.update(1)  # ← progress increases
+            pbar.update(1)
 
         next_url = search_result.get("_links", {}).get("next", {}).get("href")
 
@@ -210,20 +103,12 @@ def pick_pdf_and_xml(bitstreams_json):
     )
 
     jats_xml = next(
-        (
-            b
-            for b in bits
-            if b.get("name", "").lower().endswith("-jats.xml")
-        ),
+        (b for b in bits if b.get("name", "").lower().endswith("-jats.xml")),
         None,
     )
 
     annotation_xml = next(
-        (
-            b
-            for b in bits
-            if b.get("name", "").lower().endswith("-annotations.xml")
-        ),
+        (b for b in bits if b.get("name", "").lower().endswith("-annotations.xml")),
         None,
     )
 
@@ -254,17 +139,16 @@ def get_item_content(bundle_links):
     item_content = requests.get(bundle_links).json()
     bitstream_url = ""
     bundle_uuid = ""
-    # print(item_content['_embedded']['bundles'])
+
     for item in item_content["_embedded"]["bundles"]:
         if item["name"] == "ORIGINAL":
             bundle_uuid = item["uuid"]
             bitstream_url = item["_links"]["bitstreams"]["href"]
-            # break
 
     item_content = requests.get(bitstream_url).json()
-    r = pick_pdf_and_xml(item_content)
+    files = pick_pdf_and_xml(item_content)
     item_name = item_content["_embedded"]["bitstreams"][0]["name"]
-    return {"name": item_name, "bundle_uuid": bundle_uuid, "content": r}
+    return {"name": item_name, "bundle_uuid": bundle_uuid, "content": files}
 
 
 def download_item_content(pdf_url):
@@ -286,14 +170,15 @@ def upload_xml_to_renate(s, xml, bundle_uuid, name):
 
 def get_collection_items_by_handle(collection_id: str):
     items = get_items_for_collection(collection_id)
+
     # remove this code
     item_s = []
     for item in items:
         if item["uuid"] == "d81476a5-146e-4edd-97f0-124edc83a9ac":
             item_s = item
-    print('item')
     items = [item_s]
     # remove till here
+
     results = []
     print("Retreiving papers metadata...")
 
@@ -320,7 +205,7 @@ def get_collection_items_by_handle(collection_id: str):
             {
                 "uuid": item["uuid"],
                 "title": item["name"],
-                "name":  item_content["name"],
+                "name": item_content["name"],
                 "doi": doi[0] if len(doi) > 0 else "",
                 "license": license[0]["value"] if len(license) > 0 else "",
                 "renate_doi": renate_doi[0] if len(renate_doi) > 0 else "",
@@ -346,13 +231,14 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str):
         name = it["name"]
         name = name.split(".")[0] + "-jats"
         pdf_url = it["pdf_content"]["content"]
-        print(it["jats_xml_content"])
         existing_jats = it["jats_xml_content"]
         if existing_jats:
             print(f"[SKIP] {item_uuid} → JATS already exists")
             continue
 
-        xml = pdf_to_xml(pdf_url, it["title"], it["doi"], it["renate_doi"], it["license"])
+        xml = pdf_to_xml(
+            pdf_url, it["title"], it["doi"], it["renate_doi"], it["license"]
+        )
 
         upload_xml_to_renate(s, xml, it["bundle_uuid"], name)
         processed += 1

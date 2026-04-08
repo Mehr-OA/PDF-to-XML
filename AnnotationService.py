@@ -508,5 +508,3 @@ def create_and_add_annotations(s, collection_id):
         # retrieve_high_quality_annotations(results)
         name = name.split(".")[0] + "-annotations"
         upload_xml_to_renate(s, xml, bundle_uuid, (name))
-
-    # find high quality metadata

@@ -159,7 +159,8 @@ It retrieves candidate collection items, skips items that already have a JATS XM
 
 ### Plasma Physics Annotation Generation and RENATE Upload (AnnotationService)
 
-This script reads JATS XML files from RENATE items, extracts article text, identifies low-temperature plasma papers, generates plasma-domain entity annotations, and uploads the resulting annotation XML back to RENATE. It also enriches item metadata with high-confidence extracted keywords.
+This script reads JATS XML files from RENATE items, extracts article text, identifies low-temperature plasma papers, generates plasma-domain entity annotations, and uploads the resulting annotation XML back to RENATE. It also enriches item metadata with high-confidence extracted keywords. The trained models for generating plasma physics text annotations can be downloaded from:
+https://drive.google.com/file/d/1ZJsaVHdGudrsSlsxU3zJwqDYqRUMf6qi/view?usp=sharing
 
 #### `clean_keyword_objects(keyword_list)`
 

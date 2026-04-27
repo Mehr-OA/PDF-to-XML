@@ -103,19 +103,15 @@ UPDATE_ITEMS_METADATA: "https://oa.tib.eu/renate/server/api/core/items/{item_uui
 
 ### Running the Pipeline
 
-#### Step 1 — Make the script executable
-chmod +x run_pipeline.sh
-
-#### Step 2 — Run the pipeline
-./run_pipeline.sh
+python app.py
 
 ### Scripts Documentation
 
-## PDF-to-JATS XML Conversion and RENATE Upload (FileService)
+### PDF-to-JATS XML Conversion and RENATE Upload (FileService)
 
 This module retrieves PDF items from a RENATE repository, converts PDFs into JATS XML using GROBID, and uploads the generated XML back to RENATE. Given below are the detailes of implemented functions.
 
-### `pdf_to_xml(pdf_url, name, doi, renate_doi, license)`
+#### `pdf_to_xml(pdf_url, name, doi, renate_doi, license)`
 
 Downloads a PDF from the given URL and sends it to the configured GROBID API for full-text processing.  
 If GROBID returns TEI XML successfully, the TEI XML is converted into JATS XML using article metadata such as title, DOI, RENATE DOI, and license.

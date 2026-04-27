@@ -226,91 +226,6 @@ def updated_item_metadata(item_uuid, payload, s):
     else:
         print("Metadata upload failed", upload_response.text)
 
-
-def nfc(s):
-    return unicodedata.normalize("NFC", s)
-
-
-'''
-def detok_with_offsets(tokens):
-    """
-    Returns (text, spans) where spans[i] = (start,end) char offsets of tokens[i]
-    in the detokenized text. Rules are simple and deterministic.
-    """
-    text_parts = []
-    spans = []
-    cur = 0
-
-    prev_token = None
-    for tok in tokens:
-        add_space = True
-
-        if prev_token is None:
-            add_space = False
-        elif tok in NO_SPACE_BEFORE:
-            add_space = False
-        elif prev_token in NO_SPACE_AFTER:
-            add_space = False
-        elif tok in GLUE_TOKENS or prev_token in GLUE_TOKENS:
-            add_space = False
-
-        if add_space:
-            text_parts.append(" ")
-            cur += 1
-
-        start = cur
-        text_parts.append(tok)
-        cur += len(tok)
-        end = cur
-        spans.append((start, end))
-        prev_token = tok
-
-    text = "".join(text_parts)
-    return nfc(text), spans  # normalize for stability
-'''
-
-'''
-def bio_to_spans(
-    labels, token_spans, raw_text, entity_type, confidences=None, agg="min"
-):
-    """
-    labels: BIO labels per word
-    token_spans: [(start,end)] per word
-    confidences: [float] per word for this entity type (optional). If None, defaults to 1.0.
-    """
-    if confidences is None:
-        confidences = [1.0] * len(labels)
-
-    out = []
-    i = 0
-    while i < len(labels):
-        lab = labels[i]
-        if lab.startswith("B-"):
-            j = i + 1
-            while j < len(labels) and labels[j].startswith("I-"):
-                j += 1
-            start = token_spans[i][0]
-            end = token_spans[j - 1][1]
-            span_conf = (
-                min(confidences[i:j])
-                if agg == "min"
-                else sum(confidences[i:j]) / max(1, j - i)
-            )
-            out.append(
-                {
-                    "start": start,
-                    "end": end,
-                    "text": raw_text[start:end],
-                    "type": entity_type,
-                    "confidence": round(float(span_conf), 4),  # <— NEW
-                }
-            )
-            i = j
-        else:
-            i += 1
-    return out
-'''
-
 # ---------------- Build PPAnn XML ----------------
 PP = "https://example.org/ppann/1.0"
 XL = "http://www.w3.org/1999/xlink"
@@ -443,7 +358,6 @@ def create_and_add_annotations(s, collection_id):
         else:
             continue
         
-        ltp = True  # remove it
         threshold_entities = []
         text_parts = []
 

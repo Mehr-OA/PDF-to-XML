@@ -20,8 +20,7 @@ flowchart TD
     C --> D[GROBID: PDF to JATS XML]
     D --> E[Upload JATS XML to item]
     E --> F[Identify plasma physics articles and Extract entities]
-    F --> G[Extract entities from articles]
-    G --> H[Organize extracted entities into XML and upload to RENATE]
+    F --> G[Organize extracted entities into XML and upload to RENATE]
 ```
 
 ## Repository Structure

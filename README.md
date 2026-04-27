@@ -36,6 +36,17 @@ Extract entities from articles
   ### ↓
 Organize extracted entities into XML and upload to RENATE
 ```
+```mermaid
+flowchart TD
+    A[RENATE collection] --> B[Fetch items via API]
+    B --> C[Retrieve PDFs]
+    C --> D[GROBID: PDF to JATS XML]
+    D --> E[Upload JATS XML to item]
+    E --> F[Identify plasma physics articles]
+    F --> G[Extract entities from articles]
+    G --> H[Organize extracted entities into XML and upload to RENATE]
+```
+
 
 ## Repository Structure
 

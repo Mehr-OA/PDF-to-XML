@@ -13,29 +13,6 @@ The pipeline is designed to be executed by a human operator using a simple shell
 
 ## Overview of the Pipeline
 
-```
-RENATE collection
-      │
-      ▼
-Fetch items via API
-      │
-      ▼
-Retrieve PDFs
-      │
-      ▼
-GROBID (PDF → JATS XML)
-      │
-      ▼
-Upload JATS XML to item
-      │
-      ▼
-Identify plasma physics articles
-      │
-      ▼
-Extract entities from articles
-  ### ↓
-Organize extracted entities into XML and upload to RENATE
-```
 ```mermaid
 flowchart TD
     A[RENATE collection] --> B[Fetch items via API]
@@ -46,7 +23,6 @@ flowchart TD
     F --> G[Extract entities from articles]
     G --> H[Organize extracted entities into XML and upload to RENATE]
 ```
-
 
 ## Repository Structure
 

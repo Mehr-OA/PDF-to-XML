@@ -419,14 +419,11 @@ def read_jats_xml(file_path):
 def create_and_add_annotations(s, collection_id):
     items = get_collection_items_by_handle(collection_id)
     print("Generating annotations")
-    for it in items[:1]:
-        # print('item', it)
-        print(it)
+    for it in items:
         item_uuid = it["uuid"]
         bundle_uuid = it["bundle_uuid"]
         name = it["name"]
         print(f"Processing item {name}")
-        # get metadata here
         keywords = it["keywords"]
         xml_url = it["jats_xml_content"]["content"]
         existing_annotations = it["annotation_xml_content"]
@@ -451,60 +448,62 @@ def create_and_add_annotations(s, collection_id):
         text_parts = []
 
         # add title
-        if title:
-            text_parts.append(title)
+        if ltp:
+            if title:
+                text_parts.append(title)
 
-        # add abstract
-        if abstract:
-            text_parts.append(abstract[0])
+            # add abstract
+            if abstract:
+                text_parts.append(abstract[0])
 
-        # add sections
-        for section in sections:
-            sec_title = section.get("title")
-            paragraphs = section.get("paragraphs", [])
+            # add sections
+            for section in sections:
+                sec_title = section.get("title")
+                paragraphs = section.get("paragraphs", [])
 
-            if sec_title:
-                text_parts.append(sec_title)
+                if sec_title:
+                    text_parts.append(sec_title)
 
-            for para in paragraphs:
-                if para:
-                    text_parts.append(para)
+                for para in paragraphs:
+                    if para:
+                        text_parts.append(para)
 
-            # final concatenated text
-        text = " ".join(text_parts)
+                # final concatenated text
+            text = " ".join(text_parts)
 
-        response = generate_annotations(text)
-        entities = response.get("entities", [])
-        sentences = response.get("sentences", [])
-        updated_sentences = update_entities_inplace(sentences, clean_keyword)
-        updated_entities = clean_keyword_objects(entities)
+            response = generate_annotations(text)
+            entities = response.get("entities", [])
+            sentences = response.get("sentences", [])
+            updated_sentences = update_entities_inplace(sentences, clean_keyword)
+            updated_entities = clean_keyword_objects(entities)
 
-        for e in updated_entities:
-            text = e["text"].strip().lower()
+            for e in updated_entities:
+                text = e["text"].strip().lower()
 
-            if (
-                text not in keywords
-                and e["confidence"] > 0.95
-                and e["type"] != "G#Unit"
-                and len(text.split()) > 2
-            ):
+                if (
+                    text not in keywords
+                    and e["confidence"] > 0.95
+                    and e["type"] != "G#Unit"
+                    and len(text.split()) > 2
+                ):
                 
-                threshold_entities.append(text)
+                    threshold_entities.append(text)
 
-            # remove duplicates
-            threshold_entities = list(set(threshold_entities))[:20]
-            threshold_entities.append("Low Temperature Plasma")
-        # print(merged_keywords)
-        payload = [
-            {"op": "add", "path": "/metadata/tib.subject.mehr-oa", "value": {"value": entity}}
-            for entity in threshold_entities
-        ]
-        updated_item_metadata(item_uuid, payload, s)
+                # remove duplicates
+                threshold_entities = list(set(threshold_entities))[:20]
+                threshold_entities.append("Low Temperature Plasma")
+        
+            payload = [
+                {"op": "add", "path": "/metadata/tib.subject.mehr-oa", "value": {"value": entity}}
+                for entity in threshold_entities
+            ]
+            updated_item_metadata(item_uuid, payload, s)
 
-        xml = build_ppann_xml(
-            updated_entities, updated_sentences, it["doi"], it["renate_doi"], it["title"]
-        )
+            xml = build_ppann_xml(
+                updated_entities, updated_sentences, it["doi"], it["renate_doi"], it["title"]
+            )
 
-        # retrieve_high_quality_annotations(results)
-        name = name.split(".")[0] + "-annotations"
-        upload_xml_to_renate(s, xml, bundle_uuid, (name))
+            name = name.split(".")[0] + "-annotations"
+            upload_xml_to_renate(s, xml, bundle_uuid, (name))
+        else:
+            print("Not a plasma physics article")

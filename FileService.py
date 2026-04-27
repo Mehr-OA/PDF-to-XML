@@ -171,14 +171,6 @@ def upload_xml_to_renate(s, xml, bundle_uuid, name):
 def get_collection_items_by_handle(collection_id: str):
     items = get_items_for_collection(collection_id)
 
-    # remove this code
-    item_s = []
-    for item in items:
-        if item["uuid"] == "d81476a5-146e-4edd-97f0-124edc83a9ac":
-            item_s = item
-    items = [item_s]
-    # remove till here
-
     results = []
     print("Retreiving papers metadata...")
 
@@ -226,7 +218,7 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str):
     items = get_collection_items_by_handle(collection_id)
 
     processed = 0
-    for it in tqdm(items[:1], desc="PDFs to XML"):
+    for it in tqdm(items, desc="PDFs to XML"):
         item_uuid = it["uuid"]
         name = it["name"]
         name = name.split(".")[0] + "-jats"

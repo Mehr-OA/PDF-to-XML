@@ -35,7 +35,7 @@ flowchart TD
 │ ├── config.json
 │ ├── model.safetensors
 │ └── training_args.bin
-├── tei_to_jats.xslt
+├── teixml.xml
 ├── config.yml
 └── README.md
 ```

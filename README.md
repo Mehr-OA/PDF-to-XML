@@ -34,6 +34,7 @@ Identify plasma physics articles
       ▼
 Extract entities from articles
       ↓
+      <p style="font-size:50px;">↓</p>
 Organize extracted entities into XML and upload to RENATE
 ```
 

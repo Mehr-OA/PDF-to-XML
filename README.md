@@ -20,25 +20,22 @@ RENATE collection
 Fetch items via API
       │
       ▼
-Download PDFs
+Retrieve PDFs
       │
       ▼
-GROBID (PDF → TEI XML)
-      │
-      ▼
-TEI → JATS conversion
+GROBID (PDF → JATS XML)
       │
       ▼
 Upload JATS XML to item
       │
       ▼
-Plasma-physics detection
+Identify plasma physics articles
       │
       ▼
-NER annotation
+Extract entities from articles
       │
       ▼
-Add extracted entities to item metadata
+Organize extracted entities into XML and upload to RENATE
 ```
 
 ## Repository Structure

@@ -116,82 +116,82 @@ This module retrieves PDF items from a RENATE repository, converts PDFs into JAT
 Downloads a PDF from the given URL and sends it to the configured GROBID API for full-text processing.  
 If GROBID returns TEI XML successfully, the TEI XML is converted into JATS XML using article metadata such as title, DOI, RENATE DOI, and license.
 
-### `convert_tei_to_jats(tei_xml, name, doi, renate_doi, license)`
+#### `convert_tei_to_jats(tei_xml, name, doi, renate_doi, license)`
 
 Transforms a TEI XML document into JATS XML using the `teixml.xml` XSLT stylesheet.  
 The function injects metadata fields such as article title, original DOI, RENATE DOI, license, and XML creation date into the generated JATS output.
 
-### `get_items_for_collection(collection_id)`
+#### `get_items_for_collection(collection_id)`
 
 Retrieves all items from a RENATE collection using paginated API requests.  
 The function follows the `next` links returned by the API and returns a list of item objects from the collection.
 
-### `get_item_information(item_id)`
+#### `get_item_information(item_id)`
 
 Fetches the full metadata and API information for a single RENATE item using its item UUID.  
 This is useful when detailed information about a specific repository item is needed.
 
-### `get_item_content(bundle_links)`
+#### `get_item_content(bundle_links)`
 
 Retrieves the bundles attached to a repository item and finds the `ORIGINAL` bundle.  
 It then extracts the available bitstreams from that bundle and returns the PDF/XML file information together with the bundle UUID.
 
-### `download_item_content(pdf_url)`
+#### `download_item_content(pdf_url)`
 
 Downloads the binary content of a PDF from the provided content URL.  
 The function raises an error if the download request fails.
 
-### `upload_xml_to_renate(s, xml, bundle_uuid, name)`
+#### `upload_xml_to_renate(s, xml, bundle_uuid, name)`
 
 Uploads a generated XML file to a RENATE/DSpace bundle using an authenticated `requests.Session`.  
 The uploaded file is named using the provided `name` value and attached to the corresponding bundle UUID.
 
-### `get_collection_items_by_handle(collection_id)`
+#### `get_collection_items_by_handle(collection_id)`
 
 Collects metadata for all candidate PDF items in a RENATE/DSpace collection.  
 For each item, it extracts title, DOI, RENATE DOI, license, keywords, bundle UUID, PDF URL, and information about existing JATS or annotation XML files.
 
-### `add_xmls_in_renate(s, collection_id)`
+#### `add_xmls_in_renate(s, collection_id)`
 
 Main pipeline function for converting and uploading JATS XML files.  
 It retrieves candidate collection items, skips items that already have a JATS XML file, converts missing PDFs into JATS XML, and uploads the generated XML back to RENATE.
 
 
-## Plasma Physics Annotation Generation and RENATE Upload (AnnotationService)
+### Plasma Physics Annotation Generation and RENATE Upload (AnnotationService)
 
 This script reads JATS XML files from RENATE items, extracts article text, identifies low-temperature plasma papers, generates plasma-domain entity annotations, and uploads the resulting annotation XML back to RENATE. It also enriches item metadata with high-confidence extracted keywords.
 
-### `clean_keyword_objects(keyword_list)`
+#### `clean_keyword_objects(keyword_list)`
 
 Applies `clean_keyword()` to the `"text"` field of each entity object in a list.  
 This is used to normalize extracted entities before saving or comparing them with existing keywords.
 
-### `label_ltp(title, abstract, paper_keywords=None)`
+#### `label_ltp(title, abstract, paper_keywords=None)`
 
 Classifies whether a paper is likely related to low-temperature plasma.  
 It searches the title, abstract, and keywords for predefined LTP terms while excluding papers containing fusion or high-energy plasma terms.
 
-### `parse_jats_xml(xml_url)`
+#### `parse_jats_xml(xml_url)`
 
 Downloads and parses a JATS XML file from a URL.  
 It extracts the article title, abstract paragraphs, body sections, section paragraphs, and figure/table captions.
 
-### `updated_item_metadata(item_uuid, payload, s)`
+#### `updated_item_metadata(item_uuid, payload, s)`
 
 Updates metadata for a RENATE/DSpace item using a JSON Patch payload.  
 This is used to add extracted high-confidence subject keywords to the item metadata.
 
-### `build_ppann_xml(bio_dict, updated_sentences, doi, renate_doi, title)`
+#### `build_ppann_xml(bio_dict, updated_sentences, doi, renate_doi, title)`
 
 Builds a custom annotation XML document for plasma physics entities.  
 The XML contains source metadata such as DOI, RENATE DOI, and title, followed by sentence-level entity annotations with entity IDs, types, text, and optional offsets.
 
-### `create_and_add_annotations(s, collection_id)`
+#### `create_and_add_annotations(s, collection_id)`
 
 Main annotation pipeline for RENATE collection items.  
 It retrieves items, skips those that already have annotation XML, parses JATS XML, extracts article text, generates entity annotations, updates metadata with high-confidence keywords, builds annotation XML, and uploads it back to RENATE.
 
-## Authorization for uploading files to RENATE
+### Authorization for uploading files to RENATE
 
 Authentication settings are handled `AuthService`
 

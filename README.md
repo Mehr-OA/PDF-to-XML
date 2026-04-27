@@ -19,7 +19,7 @@ flowchart TD
     B --> C[Retrieve PDFs]
     C --> D[GROBID: PDF to JATS XML]
     D --> E[Upload JATS XML to item]
-    E --> F[Identify plasma physics articles]
+    E --> F[Identify plasma physics articles Extract entities]
     F --> G[Extract entities from articles]
     G --> H[Organize extracted entities into XML and upload to RENATE]
 ```

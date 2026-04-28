@@ -1,25 +1,17 @@
-# from dotenv import load_dotenv
 from lxml import etree
-
-# load_dotenv()
-import gc
-from lxml import etree
-from pathlib import Path
-from lxml import etree
-import unicodedata
-from datetime import datetime
 from FileService import get_collection_items_by_handle, upload_xml_to_renate
 import requests
 import re
-from typing import Iterable, Union, List
+from typing import Iterable, Union
+import random
 from config_loader import CONFIG
 from inference import generate_annotations
 
 # ---------------- Detokenization & offsets ----------------
 NO_SPACE_BEFORE = {".", ",", ":", ";", "!", "?", "%", ")", "]", "}", "’", "”"}
 NO_SPACE_AFTER = {"(", "[", "{", "£", "$", "€", "“"}
-GLUE_TOKENS = {"-", "–", "—", "/"}  # attach without surrounding spaces
-# dc.subject.plasma/LTP
+GLUE_TOKENS = {"-", "–", "—", "/"}
+
 LTP_KEYWORDS = [
     "low temperature plasma",
     "cold plasma",
@@ -70,7 +62,6 @@ def _word_boundary_pattern(term: str) -> re.Pattern:
     return re.compile(pat, flags=re.IGNORECASE)
 
 
-# Precompile for speed
 _POS_PATS = [_word_boundary_pattern(t) for t in LTP_KEYWORDS]
 _NEG_PATS = [_word_boundary_pattern(t) for t in EXCLUSIONS]
 
@@ -219,23 +210,33 @@ def parse_jats_xml(xml_url):
 
 
 def updated_item_metadata(item_uuid, payload, s):
-    url = CONFIG.UPDATE_ITEMS_METADATA.format(item_uuid=item_uuid)
-    upload_response = s.patch(url, json=payload)
-    if upload_response.ok:
-        print("Metadata updated successfully!")
-    else:
-        print("Metadata upload failed", upload_response.text)
+    try:
+        url = CONFIG.UPDATE_ITEMS_METADATA.format(item_uuid=item_uuid)
 
-# ---------------- Build PPAnn XML ----------------
-PP = "https://example.org/ppann/1.0"
-XL = "http://www.w3.org/1999/xlink"
+        upload_response = s.patch(url, json=payload)
+        upload_response.raise_for_status()
+
+        print(f"[OK] Metadata updated successfully for item {item_uuid}")
+
+    except requests.exceptions.HTTPError as e:
+        print(f"[ERROR] Metadata upload failed for item {item_uuid}: HTTP error -> {e}")
+        print(upload_response.text)
+
+    except requests.exceptions.ConnectionError:
+        print(f"[ERROR] Connection error while updating metadata for item {item_uuid}")
+
+    except requests.exceptions.Timeout:
+        print(f"[ERROR] Timeout while updating metadata for item {item_uuid}")
+
+    except Exception as e:
+        print(f"[ERROR] Unexpected metadata update error for item {item_uuid}: {e}")
 
 
-def build_ppann_xml(bio_dict, updated_sentences, doi, renate_doi, title):
+# ---------------- Build Plasma Physics Annotations XML ----------------
+def build_ppann_xml(updated_sentences, doi, renate_doi, title):
     root = etree.Element("document")
     root.set("version", "1.0")
 
-    # source
     src = etree.SubElement(root, "source")
     if doi:
         etree.SubElement(src, "doi").text = doi
@@ -249,7 +250,7 @@ def build_ppann_xml(bio_dict, updated_sentences, doi, renate_doi, title):
     entities_el = etree.SubElement(ann, "entities")
     sentences_el = etree.SubElement(ann, "sentences")
 
-    global_eid = 0  # unique entity id across the whole document
+    global_eid = 0
     for sid, sent in enumerate(updated_sentences, start=1):
         s_el = etree.SubElement(sentences_el, "sentence")
         s_el.set("id", f"s{sid}")
@@ -257,7 +258,6 @@ def build_ppann_xml(bio_dict, updated_sentences, doi, renate_doi, title):
         if sent.get("text"):
             s_el.set("text", sent["text"])
 
-        # entities container under this sentence
         entities_el = etree.SubElement(s_el, "entities")
 
         for ent in sent.get("entities", []):
@@ -266,17 +266,14 @@ def build_ppann_xml(bio_dict, updated_sentences, doi, renate_doi, title):
             e_el.set("id", f"e{global_eid}")
             e_el.set("type", ent.get("type", "Unknown"))
 
-            # store cleaned/normalized entity text here (if already cleaned in your object)
             if ent.get("text"):
                 e_el.set("text", ent["text"])
 
-            # optional: keep offsets if you have them
             if ent.get("start") is not None:
                 e_el.set("start", str(ent["start"]))
             if ent.get("end") is not None:
                 e_el.set("end", str(ent["end"]))
 
-            # optional: keep original entity_id from your pipeline
             if ent.get("entity_id") is not None:
                 e_el.set("orig_id", str(ent["entity_id"]))
 
@@ -311,39 +308,82 @@ def sec_to_dict(sec):
     }
 
 
-"""
-def _t(el):
-    return "" if el is None else "".join(el.itertext())
+def retrieve_keywords(entities):
+    def normalize_entity(text):
+        text = text.lower().strip()
+
+        # Simple singularization
+        if text.endswith("s") and len(text) > 3:
+            text = text[:-1]
+
+        return text
+
+    unique_entities = []
+    seen = set()
+
+    for entity in entities:
+        if not entity:
+            continue
+
+        normalized = normalize_entity(entity)
+
+        if normalized not in seen:
+            seen.add(normalized)
+            unique_entities.append(entity)
+
+    random.shuffle(unique_entities)
+    unique_entities = unique_entities[:15]
+    unique_entities.append("Low Temperature Plasma Research")
+    return unique_entities
 
 
-def get_xml():
-    # get xml from renate
-    # open it
-    read_jats_xml("test.xml")
+def prepare_text(title, abstract, sections):
+    text_parts = []
 
+    if title:
+        text_parts.append(title)
+    if abstract:
+        text_parts.append(abstract[0])
 
-def read_jats_xml(file_path):
-    art = parse_jats_xml(file_path)
-    print("TITLE:", art["title"])
-    print("abstract", art["abstract"][0])
-    # print('sections', art['sections'])
-    annotate_class_wise_text(art["abstract"][0])
-"""
+    for section in sections:
+        sec_title = section.get("title")
+        paragraphs = section.get("paragraphs", [])
+
+        if sec_title:
+            text_parts.append(sec_title)
+
+        for para in paragraphs:
+            if para:
+                text_parts.append(para)
+
+    return " ".join(text_parts)
 
 
 def create_and_add_annotations(s, collection_id):
     items = get_collection_items_by_handle(collection_id)
     print("Generating annotations")
+
     for it in items:
         item_uuid = it["uuid"]
         bundle_uuid = it["bundle_uuid"]
         name = it["name"]
+
         print(f"Processing item {name}")
+
         keywords = it["keywords"]
-        xml_url = it["jats_xml_content"]["content"]
+
+        # Check JATS XML existence before proceeding
+        jats_xml = it.get("jats_xml_content")
+
+        if not jats_xml or not isinstance(jats_xml, dict) or not jats_xml.get("content"):
+            print(f"[SKIP] {item_uuid} → No JATS XML available")
+            continue
+
+        xml_url = jats_xml["content"]
+
         existing_annotations = it["annotation_xml_content"]
         if existing_annotations:
-            print(f"[SKIP] {item_uuid} → Annotations already exists")
+            print(f"[SKIP] {item_uuid} → Annotations already exist")
             continue
 
         article = parse_jats_xml(xml_url)
@@ -351,73 +391,60 @@ def create_and_add_annotations(s, collection_id):
         title = article["title"]
         abstract = article["abstract"]
         sections = article["sections"]
-        
-        if len(title) != 0 and len(abstract) != 0:
-            ltp = label_ltp(title, abstract[0], keywords)
-            
-        else:
+
+        if not title or not abstract:
+            print(f"[SKIP] {item_uuid} → Missing title or abstract")
             continue
-        
+
+        ltp = label_ltp(title, abstract[0], keywords)
+
         threshold_entities = []
-        text_parts = []
 
-        # add title
         if ltp:
-            if title:
-                text_parts.append(title)
-
-            # add abstract
-            if abstract:
-                text_parts.append(abstract[0])
-
-            # add sections
-            for section in sections:
-                sec_title = section.get("title")
-                paragraphs = section.get("paragraphs", [])
-
-                if sec_title:
-                    text_parts.append(sec_title)
-
-                for para in paragraphs:
-                    if para:
-                        text_parts.append(para)
-
-                # final concatenated text
-            text = " ".join(text_parts)
+            text = prepare_text(title, abstract, sections)
 
             response = generate_annotations(text)
             entities = response.get("entities", [])
             sentences = response.get("sentences", [])
+
             updated_sentences = update_entities_inplace(sentences, clean_keyword)
             updated_entities = clean_keyword_objects(entities)
 
             for e in updated_entities:
-                text = e["text"].strip().lower()
+                entity_text = e["text"].strip().lower()
 
                 if (
-                    text not in keywords
+                    entity_text not in keywords
                     and e["confidence"] > 0.95
                     and e["type"] != "G#Unit"
-                    and len(text.split()) > 2
+                    and e["type"] != "G#PlasmaMedium"
+                    and e["type"] != 'G#Species'
+                    and 2 < len(entity_text.split()) < 5
                 ):
-                
-                    threshold_entities.append(text)
+                    threshold_entities.append(entity_text)
 
-                # remove duplicates
-                threshold_entities = list(set(threshold_entities))[:20]
-                threshold_entities.append("Low Temperature Plasma")
-        
+            mehr_oa_keywords = retrieve_keywords(threshold_entities)
+
             payload = [
-                {"op": "add", "path": "/metadata/tib.subject.mehr-oa", "value": {"value": entity}}
-                for entity in threshold_entities
+                {
+                    "op": "add",
+                    "path": "/metadata/tib.subject.mehr-oa",
+                    "value": {"value": entity},
+                }
+                for entity in mehr_oa_keywords
             ]
+
             updated_item_metadata(item_uuid, payload, s)
 
             xml = build_ppann_xml(
-                updated_entities, updated_sentences, it["doi"], it["renate_doi"], it["title"]
+                updated_sentences,
+                it["doi"],
+                it["renate_doi"],
+                it["title"],
             )
 
             name = name.split(".")[0] + "-annotations"
-            upload_xml_to_renate(s, xml, bundle_uuid, (name))
+            upload_xml_to_renate(s, xml, bundle_uuid, name)
+
         else:
-            print("Not a plasma physics article")
+            print(f"[SKIP] {item_uuid} → Not a plasma physics article")

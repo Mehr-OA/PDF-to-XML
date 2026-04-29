@@ -47,10 +47,18 @@ flowchart TD
 
 ### Python Dependencies
 
-request
+requests
+
 lxml
+
 torch
-transformers
+
+transformers==4.49
+
+torch_struct
+
+tensorboardX
+
 pyyaml
 
 

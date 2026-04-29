@@ -21,7 +21,7 @@ production:
     update_item_metadata: "core/items/{item_uuid}"
     upload_bitstreams: "core/bundles/{bundle_uuid}/bitstreams"
     "login": "authn/login"
-    "GROBID_URL": "https://orkg.org/grobid/api/processFulltextDocument"
+    "GROBID_URL": "http://localhost:8070/api/processFulltextDocument"
   credentials:
     user: ""
     password: ""

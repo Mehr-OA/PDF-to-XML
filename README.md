@@ -192,5 +192,5 @@ It retrieves items, skips those that already have annotation XML, parses JATS XM
 
 ### Authorization for uploading files to RENATE
 
-Authentication settings are handled `AuthService`
+Authentication settings are handled in `AuthService`
 

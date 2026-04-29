@@ -26,7 +26,7 @@ flowchart TD
 ## Repository Structure
 
 ```
-├── app.py
+├── main.py
 ├── FileService.py
 ├── AnnotationService.py
 ├── AuthService.py

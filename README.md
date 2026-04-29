@@ -82,6 +82,17 @@ python main.py
 
 ### Scripts Documentation
 
+### Configuration File (`config.yaml`)
+
+The `config.yaml` file contains all environment-specific settings required by the pipeline, including RENATE API endpoints, authentication credentials, and external service URLs such as GROBID.
+
+Its primary purpose is to separate configuration from code, making the system easier to maintain, deploy, and switch between environments (e.g., test vs. production) without modifying source files.
+
+The configuration contains two main environments:
+
+- `test`: Used for RENATE test server development and validation
+- `production`: Used for the live RENATE production server
+
 ### PDF-to-JATS XML Conversion and RENATE Upload (FileService)
 
 This module retrieves PDF items from a RENATE repository, converts PDFs into JATS XML using GROBID, and uploads the generated XML back to RENATE. Given below are the detailes of implemented functions.

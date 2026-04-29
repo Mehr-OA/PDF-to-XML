@@ -93,6 +93,10 @@ The configuration contains two main environments:
 - `test`: Used for RENATE test server development and validation
 - `production`: Used for the live RENATE production server
 
+Configure the active environment (`test` or `production`) by modifying:
+
+`os.getenv("RENATE_ENV", "test")`
+
 ### PDF-to-JATS XML Conversion and RENATE Upload (FileService)
 
 This module retrieves PDF items from a RENATE repository, converts PDFs into JATS XML using GROBID, and uploads the generated XML back to RENATE. Given below are the detailes of implemented functions.

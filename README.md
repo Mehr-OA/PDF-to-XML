@@ -2,7 +2,7 @@
 
 This repository provides a pipeline for:
 
-1. Collecting items from a **RENATE (DSpace)** collection
+1. Collecting items from a **RENATE** collection
 2. Downloading their PDFs
 3. Converting PDFs to **JATS XML** using **GROBID**
 4. Uploading the XML back to the item
@@ -141,12 +141,12 @@ The function raises an error if the download request fails.
 
 #### `upload_xml_to_renate`
 
-Uploads a generated XML file to a RENATE/DSpace bundle using an authenticated `requests.Session`.  
+Uploads a generated XML file to a RENATE bundle using an authenticated `requests.Session`.  
 The uploaded file is named using the provided `name` value and attached to the corresponding bundle UUID.
 
 #### `get_collection_items_by_handle`
 
-Collects metadata for all candidate PDF items in a RENATE/DSpace collection.  
+Collects metadata for all candidate PDF items in a RENATE collection.  
 For each item, it extracts title, DOI, RENATE DOI, license, keywords, bundle UUID, PDF URL, and information about existing JATS or annotation XML files.
 
 #### `add_xmls_in_renate)`
@@ -177,7 +177,7 @@ It extracts the article title, abstract paragraphs, body sections, section parag
 
 #### `updated_item_metadata`
 
-Updates metadata for a RENATE/DSpace item using a JSON Patch payload.  
+Updates metadata for a RENATEitem using a JSON Patch payload.  
 This is used to add extracted high-confidence subject keywords to the item metadata.
 
 #### `build_ppann_xml`

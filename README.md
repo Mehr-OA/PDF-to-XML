@@ -105,6 +105,10 @@ Configure the active environment (`test` or `production`) by modifying:
 
 `os.getenv("RENATE_ENV", "test")`
 
+### Authorization for uploading files to RENATE
+
+Authentication settings are handled in `AuthService`
+
 ### PDF-to-JATS XML Conversion and RENATE Upload (FileService)
 
 This module retrieves PDF items from a RENATE repository, converts PDFs into JATS XML using GROBID, and uploads the generated XML back to RENATE. Given below are the detailes of implemented functions.
@@ -189,8 +193,4 @@ The XML contains source metadata such as DOI, RENATE DOI, and title, followed by
 
 Main annotation pipeline for RENATE collection items.  
 It retrieves items, skips those that already have annotation XML, parses JATS XML, extracts article text, generates entity annotations, updates metadata with high-confidence keywords, builds annotation XML, and uploads it back to RENATE.
-
-### Authorization for uploading files to RENATE
-
-Authentication settings are handled in `AuthService`
 

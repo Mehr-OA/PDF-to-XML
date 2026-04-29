@@ -149,7 +149,7 @@ The uploaded file is named using the provided `name` value and attached to the c
 Collects metadata for all candidate PDF items in a RENATE collection.  
 For each item, it extracts title, DOI, RENATE DOI, license, keywords, bundle UUID, PDF URL, and information about existing JATS or annotation XML files.
 
-#### `add_xmls_in_renate)`
+#### `add_xmls_in_renate`
 
 Main pipeline function for converting and uploading JATS XML files.  
 It retrieves candidate collection items, skips items that already have a JATS XML file, converts missing PDFs into JATS XML, and uploads the generated XML back to RENATE.

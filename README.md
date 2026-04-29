@@ -44,7 +44,6 @@ flowchart TD
 
 ### System Requirements
 - Python **3.9+**
-- Linux or macOS
 
 ### Python Dependencies
 

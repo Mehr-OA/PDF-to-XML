@@ -79,7 +79,7 @@ UPDATE_ITEMS_METADATA: "https://oa.tib.eu/renate/server/api/core/items/{item_uui
 
 ### Running the Pipeline
 
-python app.py
+python main.py
 
 ### Scripts Documentation
 

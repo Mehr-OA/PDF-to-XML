@@ -35,17 +35,17 @@ def is_allowed_license(metadata):
 
     return False
 
-def pdf_to_xml(pdf_url, name, doi, renate_doi, license):
+def pdf_to_xml(pdf_url, name, doi, renate_doi, license, abstract):
     pdf_file = download_item_content(pdf_url)
     pdf_file_content = {"input": ("file.pdf", BytesIO(pdf_file), "application/pdf")}
     response = requests.post(GROBID_API_URL, files=pdf_file_content)
     if response.status_code == 200:
         xml_tree = etree.fromstring(response.content)
-        xml = convert_tei_to_jats(xml_tree, name, doi, renate_doi, license)
+        xml = convert_tei_to_jats(xml_tree, name, doi, renate_doi, license, abstract)
         return xml
 
 
-def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
+def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license, abstract):
     with open("teixml.xml", "rb") as file:
         xslt = etree.XSLT(etree.XML(file.read()))
     
@@ -53,6 +53,7 @@ def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
         jats_xml = xslt(
             tei_xml,
             title=etree.XSLT.strparam(name),
+            abstract=etree.XSLT.strparam(abstract),
             dc_identifier_uri=etree.XSLT.strparam(doi),
             dc_identifier_renate=etree.XSLT.strparam(renate_doi),
             dc_rights_license=etree.XSLT.strparam(license),
@@ -215,11 +216,17 @@ def get_collection_items_by_handle(collection_id: str):
         if not pdf:
             continue
 
+        abstract = ""
+        abstract_entry = metadata.get("dc.description.abstract", [])
+        if len(abstract_entry) > 0:
+            abstract = abstract_entry[0].get("value", "").strip()
+
         results.append(
             {
                 "uuid": item["uuid"],
                 "title": item["name"],
                 "name": item_content["name"],
+                "abstract": abstract,
                 "doi": doi[0] if len(doi) > 0 else "",
                 "license": license[0]["value"] if len(license) > 0 else "",
                 "renate_doi": renate_doi[0] if len(renate_doi) > 0 else "",
@@ -251,7 +258,7 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str):
             continue
 
         xml = pdf_to_xml(
-            pdf_url, it["title"], it["doi"], it["renate_doi"], it["license"]
+            pdf_url, it["title"], it["doi"], it["renate_doi"], it["license"], it["abstract"]
         )
 
         upload_xml_to_renate(s, xml, it["bundle_uuid"], name)

@@ -38,6 +38,7 @@ LTP_KEYWORDS = [
     "rns",
     "plasma catalysis",
     "plasma activated water",
+    "low pressure discharge"
 ]
 
 EXCLUSIONS = [

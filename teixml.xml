@@ -91,13 +91,15 @@
         </jats:article>
     </xsl:template>
 
+    <xsl:param name="abstract"/>
+
     <xsl:template match="tei:profileDesc/tei:abstract">
-		<jats:abstract>
-			<xsl:for-each select=".//tei:p">
-				<jats:p><xsl:value-of select="."/></jats:p>
-			</xsl:for-each>
-		</jats:abstract>
-	</xsl:template>
+        <jats:abstract>
+            <jats:p>
+                <xsl:value-of select="$abstract"/>
+            </jats:p>
+        </jats:abstract>
+    </xsl:template>
 
     <!-- Template for title and publication date -->
     <xsl:template match="tei:fileDesc">

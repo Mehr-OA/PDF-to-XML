@@ -1,11 +1,5 @@
-# from dotenv import load_dotenv
-import os
 from lxml import etree
-import xml.etree.ElementTree as ET
-from lxml.builder import E
-import re
 import requests
-import os.path
 from datetime import datetime
 from io import BytesIO
 from tqdm import tqdm
@@ -14,6 +8,32 @@ from config_loader import CONFIG
 
 GROBID_API_URL = CONFIG.GROBID_API_URL
 
+
+def is_allowed_license(metadata):
+    allowed_terms = ["cc by", "cc by-sa", "cc by-nc", "cc by-sa-nc", "cc by-nc-sa"]
+
+    blocked_terms = ["nd"]
+
+    license_entries = metadata.get("dc.rights.license", [])
+
+    if len(license_entries) == 0:
+        return False
+
+    for entry in license_entries:
+        license_value = entry.get("value", "").lower().strip()
+
+        if not license_value:
+            continue
+
+        for blocked in blocked_terms:
+            if blocked in license_value:
+                return False
+
+        for allowed in allowed_terms:
+            if allowed in license_value:
+                return True
+
+    return False
 
 def pdf_to_xml(pdf_url, name, doi, renate_doi, license):
     pdf_file = download_item_content(pdf_url)
@@ -28,7 +48,7 @@ def pdf_to_xml(pdf_url, name, doi, renate_doi, license):
 def convert_tei_to_jats(tei_xml, name, doi, renate_doi, license):
     with open("teixml.xml", "rb") as file:
         xslt = etree.XSLT(etree.XML(file.read()))
-
+    
     try:
         jats_xml = xslt(
             tei_xml,
@@ -75,8 +95,10 @@ def get_items_for_collection(collection_id):
             if not item_obj:
                 continue
 
-            items.append(item_obj)
-            pbar.update(1)
+            metadata = item_obj.get("metadata", {})
+            if is_allowed_license(metadata):
+                items.append(item_obj)
+                pbar.update(1)
 
         next_url = search_result.get("_links", {}).get("next", {}).get("href")
 
@@ -218,7 +240,7 @@ def add_xmls_in_renate(s: requests.Session, collection_id: str):
     items = get_collection_items_by_handle(collection_id)
 
     processed = 0
-    for it in tqdm(items, desc="PDFs to XML"):
+    for it in tqdm(items[:1], desc="PDFs to XML"):
         item_uuid = it["uuid"]
         name = it["name"]
         name = name.split(".")[0] + "-jats"

@@ -108,10 +108,12 @@
     </xsl:template>
 
     <!-- Template for the document title -->
+    <xsl:param name="title"/>
+
     <xsl:template match="tei:titleStmt">
         <jats:title-group>
             <jats:article-title>
-                <xsl:value-of select="tei:title"/>
+                <xsl:value-of select="$title"/>
             </jats:article-title>
         </jats:title-group>
     </xsl:template>
